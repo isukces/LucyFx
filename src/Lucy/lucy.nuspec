@@ -1,0 +1,18 @@
+﻿<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>LucyFx</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>   
+    <projectUrl>https://github.com/isukces/LucyFx</projectUrl>     
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Extension for NancyFx</description>   
+    <copyright>Copyright by Internet Sukces Piotr Stęclik 2014</copyright>
+    <tags>Nancy,MVC,Razor</tags>
+  </metadata>
+  <files>
+    <file src="bin\Release\lucy.pdb" target="lib\net45" />
+  </files>
+</package>
