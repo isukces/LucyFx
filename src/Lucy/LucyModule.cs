@@ -40,25 +40,6 @@ namespace Lucy
         }
 
         #endregion Methods
-
-        ///// <summary>
-        ///// Stores error messages in ViewBag
-        ///// </summary>
-        ///// <param name="result"></param>
-        //[Obsolete]
-        //protected void SetValidationErrors(ModelValidationResult result)
-        //{
-        //    if (result.IsValid) return;
-        //    foreach (var errorKeyValue in result.Errors)
-        //    {
-        //        ModelValidationError firstError = errorKeyValue.Value.First();
-        //        ViewBag[ViewBagNamePrefix + errorKeyValue.Key] = firstError.ErrorMessage;
-        //    }
-        //}
-        ///// <summary>
-        ///// Prefix for key name storing error message in ViewBag
-        ///// </summary>
-
-        //public const string ViewBagNamePrefix = "_validation_error_for_";
+       
     }
 }

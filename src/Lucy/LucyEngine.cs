@@ -11,7 +11,8 @@ namespace Lucy
     {
         public static void RequestStartup(Nancy.TinyIoc.TinyIoCContainer container, Nancy.NancyContext context)
         {
-            LucyToys.GetOrCreate(context.ViewBag);
+            LucyToys toys = LucyToys.GetOrCreate(context.ViewBag);
+            toys.Container = container;
         }
 
         public static void AttachView<TModel>(NancyRazorViewBase<TModel> view)

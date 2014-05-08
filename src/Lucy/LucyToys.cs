@@ -20,13 +20,7 @@ namespace Lucy
 
         #region Static Methods
 
-        // Internal Methods 
-
-        #endregion Static Methods
-
-        #region Fields
-
-        static string KEY = "_____LucyToys______";
+        // Public Methods 
 
         public static LucyToys Get(dynamic ViewBag)
         {
@@ -50,6 +44,31 @@ namespace Lucy
             return lucyToys;
         }
 
+        #endregion Static Methods
+
+        #region Methods
+
+        // Private Methods 
+
+        private ResolveType Resolve<ResolveType>() where ResolveType : class
+        {
+            if (Container != null)
+                return Container.Resolve<ResolveType>();
+            throw new Exception("IoC Container is empty. Call Lucy.LucyEngine.RequestStartup method in your Bootstrapper.RequestStartup.");
+        }
+
+        #endregion Methods
+
+        #region Static Fields
+
+        static string KEY = "_____LucyToys______";
+
+        #endregion Static Fields
+
+        #region Fields
+
+        ILucyTextProvider nameProvider;
+
         #endregion Fields
 
         #region Properties
@@ -60,18 +79,17 @@ namespace Lucy
 
         public List<string> Javascripts { get; private set; }
 
-        public Action<object> WriteLiteral { get; set; }
-
-        ILucyTextProvider nameProvider;
         public ILucyTextProvider NameProvider
         {
             get
             {
                 if (nameProvider == null)
-                    nameProvider = Container.Resolve<ILucyTextProvider>();
+                    nameProvider = this.Resolve<ILucyTextProvider>();
                 return nameProvider;
             }
         }
+
+        public Action<object> WriteLiteral { get; set; }
 
         #endregion Properties
     }
