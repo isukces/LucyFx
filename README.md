@@ -13,6 +13,14 @@ The following example shows how to:
 
 
 ```c#
+        public MyLucyModule()
+            : base()
+        {
+            Post["/Edit/"] = _PostEdit;
+            // ... other stuff 
+        }
+        
+        
         private dynamic _PostEdit(dynamic parameters)
         {
             try
