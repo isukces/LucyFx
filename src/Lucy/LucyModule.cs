@@ -7,18 +7,23 @@ using System.Threading.Tasks;
 
 namespace Lucy
 {
-    public class LucyModule : NancyModule
+    public abstract class LucyModule : NancyModule
     {
-        public LucyModule()
+        protected LucyModule()
         {
-          //  this.WardrobeConfig = config;
+            Before += BeforeAction;
+        }
+
+        protected LucyModule(string modulePath)
+            : base(modulePath)
+        {
             Before += BeforeAction;
         }
 
 
         Response BeforeAction(NancyContext context)
         {
-           // this.ViewBag["__IWardrobeConfig__"] = WardrobeConfig;
+            // this.ViewBag["__IWardrobeConfig__"] = WardrobeConfig;
             return null;
         }
     }
