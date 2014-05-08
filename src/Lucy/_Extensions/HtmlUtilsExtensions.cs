@@ -177,7 +177,7 @@ namespace Lucy
                 {"method", method.ToString().ToLower()}
             };
             if (action != null)
-                attr["actions"] = Nancy.Extensions.ContextExtensions.ToFullPath(x.RenderContext.Context, action);
+                attr["action"] = Nancy.Extensions.ContextExtensions.ToFullPath(x.RenderContext.Context, action);
 
             attr.Append((object)htmlAttributes);
             return OpenClose(x, "form", attr);
