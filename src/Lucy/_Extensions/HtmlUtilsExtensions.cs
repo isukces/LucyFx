@@ -1,4 +1,6 @@
 ﻿using Nancy.Helpers;
+using Nancy.ModelBinding;
+using Nancy.Validation;
 using Nancy.ViewEngines.Razor;
 using System;
 using System.Collections.Generic;
@@ -7,14 +9,32 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Nancy.Extensions;
 
 namespace Lucy
 {
     public static class HtmlUtilsExtensions
     {
-        public static IHtmlString ValidationMessageFor<TModel>(this HtmlHelpers<TModel> x, Expression<Func<TModel, object>> forNameExpression)
+        #region Static Methods
+
+        // Public Methods 
+
+        public static IDisposable BeginForm<TModel>(this HtmlHelpers<TModel> x, string action = null, FormMethod method = FormMethod.Post, dynamic htmlAttributes = null)
         {
-            return new NonEncodedHtmlString("ValidationMessage is not implemented yet");
+            Dictionary<string, string> attr = new Dictionary<string, string>()
+            {
+                {"method", method.ToString().ToLower()}
+            };
+            if (action != null)
+                attr["action"] = Nancy.Extensions.ContextExtensions.ToFullPath(x.RenderContext.Context, action);
+
+            attr.Append((object)htmlAttributes);
+            return OpenClose(x, "form", attr);
+        }
+
+        public static IDisposable DivFormGroup<TModel>(this HtmlHelpers<TModel> x)
+        {
+            return OpenClose(x, "div", "class", "form-group");
         }
 
         public static IHtmlString EditFor<TModel>(this HtmlHelpers<TModel> x, Expression<Func<TModel, object>> forNameExpression)
@@ -37,7 +57,8 @@ namespace Lucy
                     { "id", member.Name},
                     { "name", member.Name }
                 };
-
+                var value = FormValueFor(x, member.Name);
+                attr["value"] = value == null ? "" : value.ToString();
                 ////attr.ValidationNumber(Translation.MustBeANumberMessage(member.Name));
                 ////if (type == typeof(int))
                 ////{
@@ -80,11 +101,11 @@ namespace Lucy
             return new NonEncodedHtmlString(markup);
         }
 
-        public static string GetTranslationFormat<TModel>(this HtmlHelpers<TModel> x, string format, params object[] parameters)
+        public static string GetEncodedTranslation<TModel>(this HtmlHelpers<TModel> x, string text)
         {
-            format = GetTranslation(x, format);
-            return string.Format(format, parameters);
+            return HttpUtility.HtmlEncode(GetTranslation(x, text));
         }
+
         public static string GetTranslation<TModel>(this HtmlHelpers<TModel> x, string text)
         {
             var toys = GetLucyToys(x);
@@ -92,52 +113,11 @@ namespace Lucy
             return text;
         }
 
-        public static IHtmlString ValidationSummary<TModel>(this HtmlHelpers<TModel> x, bool param)
+        public static string GetTranslationFormat<TModel>(this HtmlHelpers<TModel> x, string format, params object[] parameters)
         {
-            return new NonEncodedHtmlString("ValidationSummary is not implemented yet");
+            format = GetTranslation(x, format);
+            return string.Format(format, parameters);
         }
-
-        public static bool UserIsInRole<TModel>(this HtmlHelpers<TModel> x, string role)
-        {
-            var u = x.CurrentUser;
-            if (u == null || u.Claims == null)
-                return false;
-            return u.Claims.Where(i => i == role).Any();
-        }
-
-        public static IHtmlString RenderScripts<TModel>(this HtmlHelpers<TModel> x)
-        {
-            var toys = GetLucyToys(x);
-            if (toys.Javascripts.Any())
-            {
-                StringBuilder sb = new StringBuilder();
-                foreach (var i in toys.Javascripts.Distinct())
-                    sb.AppendFormat("<script src=\"{0}\"></script>\r\n", i);
-                return new NonEncodedHtmlString(sb.ToString());
-            }
-            return new NonEncodedHtmlString(string.Empty);
-        }
-
-        public static IHtmlString Link<TModel>(this HtmlHelpers<TModel> x, string label, string url, dynamic htmlAttributes = null)
-        {
-            url = x.RenderContext.Context.ToFullPath2(url);
-            Dictionary<string, string> attr = new Dictionary<string, string>()
-            {
-                {"href", HttpUtility.HtmlEncode(url)},
-            };
-            attr.Append((object)htmlAttributes);
-
-
-            var markup = attr.CompileToAttributesWithTag("a", HttpUtility.HtmlEncode(label));
-            return new NonEncodedHtmlString(markup);
-        }
-
-        public static string GetEncodedTranslation<TModel>(this HtmlHelpers<TModel> x, string text)
-        {
-            return HttpUtility.HtmlEncode(GetTranslation(x, text));
-        }
-
-
 
         public static IHtmlString LabelFor<TModel>(this HtmlHelpers<TModel> x, Expression<Func<TModel, object>> forNameExpression, dynamic htmlAttributes = null)
         {
@@ -158,34 +138,33 @@ namespace Lucy
             return new NonEncodedHtmlString(markup);
         }
 
-
-        public static LucyToys GetLucyToys<TModel>(this HtmlHelpers<TModel> x)
+        public static IHtmlString Link<TModel>(this HtmlHelpers<TModel> x, string label, string url, dynamic htmlAttributes = null)
         {
-            var a = x.RenderContext.Context.ViewBag[LucyToys.KEY];
-            if (a.HasValue)
-            {
-                var t = a.Value as LucyToys;
-                return t;
-            }
-            throw new Exception("Lucy's data has not been initialized properly. Derive your view from LucyRazorViewBase.");
-
-        }
-        public static IDisposable BeginForm<TModel>(this HtmlHelpers<TModel> x, string action = null, FormMethod method = FormMethod.Post, dynamic htmlAttributes = null)
-        {
+            url = x.RenderContext.Context.ToFullPath(url);
             Dictionary<string, string> attr = new Dictionary<string, string>()
             {
-                {"method", method.ToString().ToLower()}
+                {"href", HttpUtility.HtmlEncode(url)},
             };
-            if (action != null)
-                attr["action"] = Nancy.Extensions.ContextExtensions.ToFullPath(x.RenderContext.Context, action);
-
             attr.Append((object)htmlAttributes);
-            return OpenClose(x, "form", attr);
+
+
+            var markup = attr.CompileToAttributesWithTag("a", HttpUtility.HtmlEncode(label));
+            return new NonEncodedHtmlString(markup);
         }
 
-        public static IDisposable DivFormGroup<TModel>(this HtmlHelpers<TModel> x)
+        public static IDisposable OpenClose<TModel>(this HtmlHelpers<TModel> x, string tag, params string[] attr)
         {
-            return OpenClose(x, "div", "class", "form-group");
+            var lucyToys = x.GetLucyToys();
+            StringBuilder sb = new StringBuilder();
+            sb.Append("<" + tag);
+            if (attr != null)
+                for (int idx = 1; idx < attr.Length; idx += 2)
+                    sb.AppendFormat(" {0}=\"{1}\"", attr[idx - 1], attr[idx]);
+            sb.AppendFormat(">");
+            string openingTag = sb.ToString();
+            string closingTag = "</" + tag + ">";
+            lucyToys.WriteLiteral(openingTag);
+            return new DisposableWithAction(() => lucyToys.WriteLiteral(closingTag));
         }
 
         public static IDisposable OpenClose<TModel>(this HtmlHelpers<TModel> x, string tag, Dictionary<string, string> noEncodedAttributes)
@@ -203,19 +182,95 @@ namespace Lucy
             return new DisposableWithAction(() => lucyToys.WriteLiteral(closingTag));
         }
 
-        public static IDisposable OpenClose<TModel>(this HtmlHelpers<TModel> x, string tag, params string[] attr)
+        public static IHtmlString RenderScripts<TModel>(this HtmlHelpers<TModel> x)
         {
-            var lucyToys = x.GetLucyToys();
-            StringBuilder sb = new StringBuilder();
-            sb.Append("<" + tag);
-            if (attr != null)
-                for (int idx = 1; idx < attr.Length; idx += 2)
-                    sb.AppendFormat(" {0}=\"{1}\"", attr[idx - 1], attr[idx]);
-            sb.AppendFormat(">");
-            string openingTag = sb.ToString();
-            string closingTag = "</" + tag + ">";
-            lucyToys.WriteLiteral(openingTag);
-            return new DisposableWithAction(() => lucyToys.WriteLiteral(closingTag));
+            var toys = GetLucyToys(x);
+            if (toys.Javascripts.Any())
+            {
+                StringBuilder sb = new StringBuilder();
+                foreach (var i in toys.Javascripts.Distinct())
+                    sb.AppendFormat("<script src=\"{0}\"></script>\r\n", i);
+                return new NonEncodedHtmlString(sb.ToString());
+            }
+            return new NonEncodedHtmlString(string.Empty);
         }
+
+        public static bool UserIsInRole<TModel>(this HtmlHelpers<TModel> x, string role)
+        {
+            var u = x.CurrentUser;
+            if (u == null || u.Claims == null)
+                return false;
+            return u.Claims.Where(i => i == role).Any();
+        }
+
+        public static IHtmlString ValidationMessageFor<TModel>(this HtmlHelpers<TModel> x, Expression<Func<TModel, object>> forNameExpression)
+        {
+            var member = forNameExpression.GetTargetMemberInfo();
+            #region Try get binding exception
+            {
+                var pbException = GetPropertyBindingException(x, member.Name);
+                if (pbException != null)
+                    return new EncodedHtmlString(pbException.InnerException != null ? pbException.InnerException.Message : pbException.Message);
+            }
+            #endregion
+            #region Try get validation error
+            {
+                var validationResult = x.RenderContext.Context.ModelValidationResult;
+                if (validationResult != null && validationResult.Errors != null)
+                {
+                    IList<ModelValidationError> errors;
+                    if (validationResult.Errors.TryGetValue(member.Name, out errors))
+                        if (errors != null && errors.Any())
+                            return new EncodedHtmlString(errors[0].ErrorMessage);
+                }
+            }
+            #endregion
+            return null;
+        }
+
+        public static IHtmlString ValidationSummary<TModel>(this HtmlHelpers<TModel> x, bool param)
+        {
+            return new NonEncodedHtmlString("ValidationSummary is not implemented yet");
+        }
+        // Private Methods 
+
+        static object FormValueFor<TModel>(this HtmlHelpers<TModel> x, string propertyName)
+        {
+            var exception = GetModelBindingException(x);
+            if (exception != null)
+            {
+                var a = x.RenderContext.Context.Request.Form[propertyName];
+                if (a.HasValue)
+                    return a.Value;
+                return null;
+            }
+            var pi = typeof(TModel).GetProperty(propertyName);
+            if (pi != null && pi.CanRead && !pi.GetGetMethod().IsStatic && pi.GetIndexParameters().Length == 0)
+                return pi.GetValue(x.Model);
+            return null;
+        }
+
+        private static ModelBindingException GetModelBindingException<TModel>(HtmlHelpers<TModel> x)
+        {
+            LucyToys lt = x.GetLucyToys();
+            ModelBindingException exception = lt.AttachedExceptions.OfType<ModelBindingException>().FirstOrDefault();
+            return exception;
+        }
+
+        static PropertyBindingException GetPropertyBindingException<TModel>(HtmlHelpers<TModel> x, string propertyName)
+        {
+            ModelBindingException exception = GetModelBindingException<TModel>(x);
+            if (exception == null || exception.PropertyBindingExceptions == null)
+                return null;
+            return exception.PropertyBindingExceptions.Where(i => i.PropertyName == propertyName).FirstOrDefault();
+        }
+        // Internal Methods 
+
+        internal static LucyToys GetLucyToys<TModel>(this HtmlHelpers<TModel> x)
+        {
+            return LucyToys.Get(x.RenderContext.Context.ViewBag);
+        }
+
+        #endregion Static Methods
     }
 }

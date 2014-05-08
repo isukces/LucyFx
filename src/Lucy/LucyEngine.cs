@@ -11,21 +11,13 @@ namespace Lucy
     {
         public static void RequestStartup(Nancy.TinyIoc.TinyIoCContainer container, Nancy.NancyContext context)
         {
-            LucyToys toys = LucyToys.TryGetLucyToys(context.ViewBag);
-            if (toys == null)
-                toys = new LucyToys();
-            toys.Container = container;
-            context.ViewBag[LucyToys.KEY] = toys;
-
+            LucyToys.GetOrCreate(context.ViewBag);
         }
 
-        public static void Set1<TModel>(NancyRazorViewBase<TModel> view)
+        public static void AttachView<TModel>(NancyRazorViewBase<TModel> view)
         {
-            LucyToys toys = LucyToys.TryGetLucyToys(view.ViewBag);
-            if (toys == null)
-                toys = new LucyToys();
+            LucyToys toys = LucyToys.GetOrCreate(view.ViewBag);
             toys.WriteLiteral = view.WriteLiteral;
-            view.ViewBag[LucyToys.KEY] = toys;
         }
 
 

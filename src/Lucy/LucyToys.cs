@@ -8,39 +8,53 @@ namespace Lucy
 {
     public class LucyToys
     {
-		#region Constructors 
+        #region Constructors
 
         public LucyToys()
         {
             Javascripts = new List<string>();
+            AttachedExceptions = new List<Exception>();
         }
 
-		#endregion Constructors 
+        #endregion Constructors
 
-		#region Static Methods 
+        #region Static Methods
 
-		// Internal Methods 
+        // Internal Methods 
 
-        internal static LucyToys TryGetLucyToys(dynamic ViewBag)
+        #endregion Static Methods
+
+        #region Fields
+
+        static string KEY = "_____LucyToys______";
+
+        public static LucyToys Get(dynamic ViewBag)
         {
-            var a = ViewBag[LucyToys.KEY];
-            if (a.HasValue)
+            var item = ViewBag[LucyToys.KEY];
+            if (item.HasValue)
             {
-                var t = a.Value as LucyToys;
-                return t;
+                var lucyToys = item.Value as LucyToys;
+                return lucyToys;
             }
-            return null;
+            throw new Exception("Lucy's data has not been initialized properly. Derive your view from LucyRazorViewBase.");
         }
 
-		#endregion Static Methods 
+        public static LucyToys GetOrCreate(dynamic ViewBag)
+        {
+            LucyToys lucyToys = null;
+            var item = ViewBag[LucyToys.KEY];
+            if (item.HasValue)
+                lucyToys = item.Value as LucyToys;
+            if (lucyToys == null)
+                ViewBag[LucyToys.KEY] = lucyToys = new LucyToys();
+            return lucyToys;
+        }
 
-		#region Fields 
+        #endregion Fields
 
-        public static string KEY = "_____LucyToys______";
+        #region Properties
 
-		#endregion Fields 
-
-		#region Properties 
+        public List<Exception> AttachedExceptions { get; private set; }
 
         public Nancy.TinyIoc.TinyIoCContainer Container { get; set; }
 
@@ -59,6 +73,6 @@ namespace Lucy
             }
         }
 
-		#endregion Properties 
+        #endregion Properties
     }
 }

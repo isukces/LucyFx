@@ -14,7 +14,7 @@ namespace Lucy
         {
             base.Initialize(engine, renderContext, model);
 
-            LucyEngine.Set1(this);
+            LucyEngine.AttachView(this);
             //LucyToys toys = LucyToys.TryGetLucyToys(renderContext.Context.ViewBag);
             //if (toys == null)
             //    toys = new LucyToys();
