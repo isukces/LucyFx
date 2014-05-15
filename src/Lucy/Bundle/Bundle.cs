@@ -23,9 +23,15 @@ namespace Lucy.Bundle
 
         #region Static Methods
 
-        // Public Methods 
+        // Internal Methods 
 
-
+        internal static string DynamicBundleNameFromFiles(IEnumerable<Filename> filesWithDependencies)
+        {
+            var expanded = from fileName in filesWithDependencies
+                           select RegisteredAliases.GetOrCreateAlias(fileName);
+            string autoName = string.Join(BundleSettings.NameSeparator.ToString(), expanded);
+            return autoName;
+        }
 
         #endregion Static Methods
 
@@ -39,6 +45,7 @@ namespace Lucy.Bundle
             Files.AddIfNotExists(fileName);
             return this;
         }
+
         public Bundle Include(Filename fileName, Alias alias)
         {
             fileName.Check();
@@ -48,12 +55,6 @@ namespace Lucy.Bundle
         }
 
         #endregion Methods
-
-        #region Static Fields
-
-
-
-        #endregion Static Fields
 
         #region Properties
 
@@ -73,7 +74,6 @@ namespace Lucy.Bundle
 
         public string Name { get; private set; }
 
-
         /// <summary>
         /// Tilda prefixed path
         /// </summary>
@@ -83,18 +83,8 @@ namespace Lucy.Bundle
             {
                 if (!IsDynamic && Name.StartsWith("~/"))
                     return Name;
-                string autoName;
-                if (IsDynamic)
-                {
-                    var expanded = from fn in FilesWithDependencies
-                                   select RegisteredAliases.GetOrCreateAlias(fn);
-                    autoName = string.Join(BundleSettings.NameSeparator.ToString(), expanded);
-                }
-                else
-                    autoName = Name;
-
-
-                switch (BundleType)
+                string autoName = IsDynamic ? DynamicBundleNameFromFiles(FilesWithDependencies) : Name;
+                switch (this.BundleType)
                 {
                     case BundleTypes.Script:
                         return BundleSettings.Js.MakePath(autoName);

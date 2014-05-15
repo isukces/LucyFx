@@ -38,13 +38,15 @@ namespace Lucy.Bundle
             filesWithDependencies = (from file in filesWithDependencies
                                      where lucyToys.RenderedFiles.IndexOf(file) < 0
                                      select file).ToList();
-
-            var forceManyFiles = BundleSettings.Processing == BundleProcessing.ManyFiles || filesWithDependencies.Count != originalFilesCount;
-
             IEnumerable<string> fullPaths;
-            if (forceManyFiles)
+            if (BundleSettings.Processing == BundleProcessing.ManyFiles)
                 fullPaths = from file in filesWithDependencies
                             select file.GetFullUriPath(_renderContext.Context);
+            else if (filesWithDependencies.Count != originalFilesCount)
+                fullPaths = new[]
+                {
+                    _renderContext.Context.ToFullPath(Bundle.DynamicBundleNameFromFiles(filesWithDependencies))
+                };
             else
                 fullPaths = new[]
                 {
