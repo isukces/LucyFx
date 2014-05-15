@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Diagnostics;
 
 namespace Lucy
 {
@@ -12,7 +9,8 @@ namespace Lucy
 
         public DisposableWithAction(Action action)
         {
-            this.action = action;
+            Debug.Assert(action != null, "action != null");
+            _action = action;
         }
 
         #endregion Constructors
@@ -23,14 +21,14 @@ namespace Lucy
 
         public void Dispose()
         {
-            action();
+            _action();
         }
 
         #endregion Methods
 
         #region Fields
 
-        private Action action;
+        private readonly Action _action;
 
         #endregion Fields
     }

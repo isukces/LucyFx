@@ -1,11 +1,4 @@
 ﻿using Nancy;
-using Nancy.ModelBinding;
-using Nancy.Validation;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Lucy
 {
@@ -26,20 +19,16 @@ namespace Lucy
 
         #endregion Constructors
 
-        #region Methods
+        #region Static Methods
 
-        // Protected Methods 
-
-      
         // Private Methods 
 
-        Response BeforeAction(NancyContext context)
+        static Response BeforeAction(NancyContext context)
         {
-            // this.ViewBag["__IWardrobeConfig__"] = WardrobeConfig;
+            // for future use
             return null;
         }
 
-        #endregion Methods
-       
+        #endregion Static Methods
     }
 }

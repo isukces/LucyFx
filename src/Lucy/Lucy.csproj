@@ -32,6 +32,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AjaxMin">
+      <HintPath>..\..\..\..\..\conexx\Conexx-Cloud\packages\AjaxMin.5.9.5229.26438\lib\net40\AjaxMin.dll</HintPath>
+    </Reference>
     <Reference Include="Nancy">
       <HintPath>..\packages\Nancy.0.22.2\lib\net40\Nancy.dll</HintPath>
     </Reference>
@@ -50,17 +53,33 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Alias.cs" />
+    <Compile Include="Bundle\HtmlRenderer.cs" />
+    <Compile Include="Bundle\Bundle.cs" />
+    <Compile Include="Bundle\BundleModule.cs" />
+    <Compile Include="Bundle\BundleApplicationRegistrations.cs" />
+    <Compile Include="Bundle\RegisteredBundles.cs" />
+    <Compile Include="Bundle\BundleSettings.cs" />
+    <Compile Include="Bundle\RegisteredFileDependencies.cs" />
+    <Compile Include="Bundle\BundleApplicationStartup.cs" />
+    <Compile Include="Bundle\_enums.cs" />
+    <Compile Include="Bundle\IBundleConfig.cs" />
+    <Compile Include="Bundle\LucyBundleRegistration.cs" />
+    <Compile Include="Bundle\RegisteredAliases.cs" />
     <Compile Include="DataProcess\DataProcessContainer.cs" />
+    <Compile Include="Filename.cs" />
+    <Compile Include="LucyEngine.cs" />
     <Compile Include="_enums_.cs" />
+    <Compile Include="_Extensions\ListExtensions.cs" />
     <Compile Include="_Extensions\NancyContextExtensions.cs" />
     <Compile Include="_Extensions\NancyModuleExtension.cs" />
     <Compile Include="_Extensions\RequestExtensions.cs" />
-    <Compile Include="_TextProviders\DebugLucyTextProvider.cs" />
-    <Compile Include="_TextProviders\DefaultLucyTextProvider.cs" />
+    <Compile Include="_Extensions\StringExtension.cs" />
+    <Compile Include="TextProviders\DebugLucyTextProvider.cs" />
+    <Compile Include="TextProviders\DefaultLucyTextProvider.cs" />
     <Compile Include="DisposableWithAction.cs" />
-    <Compile Include="_TextProviders\ILucyTextProvider.cs" />
-    <Compile Include="LucyEngine.cs" />
-    <Compile Include="LucyRegistrations.cs" />
+    <Compile Include="TextProviders\ILucyTextProvider.cs" />
+    <Compile Include="LucyApplicationRegistrations.cs" />
     <Compile Include="_Extensions\DictionaryExtensions.cs" />
     <Compile Include="_Extensions\HtmlUtilsExtensions.cs" />
     <Compile Include="LucyModule.cs" />

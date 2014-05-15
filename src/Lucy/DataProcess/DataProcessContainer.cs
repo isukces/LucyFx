@@ -1,10 +1,6 @@
 ﻿using Nancy;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Lucy.DataProcess
 {
@@ -14,9 +10,9 @@ namespace Lucy.DataProcess
 
         public DataProcessContainer(MemberInfo member, Request request, dynamic dictionary)
         {
-            this.Member = member;
-            this.Request = request;
-            this.Dictionary = dictionary;
+            Member = member;
+            Request = request;
+            Dictionary = dictionary;
         }
 
         #endregion Constructors
@@ -25,34 +21,32 @@ namespace Lucy.DataProcess
 
         // Public Methods 
 
-        public DataProcessContainer Process(Func<object, object> processFunction)
+        private DataProcessContainer Process(Func<object, object> processFunction)
         {
-            var value = Dictionary[Member.Name] as Nancy.DynamicDictionaryValue;
-            if (value.HasValue)
-                Dictionary[Member.Name] = processFunction(value.Value);
-            else
-                Dictionary[Member.Name] = processFunction(null);
+            var value = Dictionary[Member.Name] as DynamicDictionaryValue;
+            Dictionary[Member.Name] = value != null && value.HasValue
+                ? processFunction(value.Value)
+                : processFunction(null);
             return this;
         }
 
         public DataProcessContainer Trim()
         {
-            return Process((value) =>
-            {
-                if (value == null)
-                    return null;
-                return value.ToString().Trim();
-            });
+            return Process(value => value == null ? null : value.ToString().Trim());
         }
 
+        /// <summary>
+        /// Method removes unnecessary spaces from string value.
+        /// </summary>
+        /// <returns></returns>
         public DataProcessContainer NormalizeString()
         {
-            return Process((value) =>
+            return Process(value =>
             {
                 if (value == null)
                     return null;
                 var text = value.ToString().Trim();
-                while (text.IndexOf("  ") > 0)
+                while (text.IndexOf("  ", StringComparison.Ordinal) > 0)
                     text = text.Replace("  ", " ");
                 return text;
             });

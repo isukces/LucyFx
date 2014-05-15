@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Lucy.TextProviders;
 
 namespace Lucy
 {
@@ -10,10 +8,11 @@ namespace Lucy
     {
         #region Constructors
 
-        public LucyToys()
+        private LucyToys()
         {
             Javascripts = new List<string>();
             AttachedExceptions = new List<Exception>();
+            RenderedFiles = new List<Filename>();
         }
 
         #endregion Constructors
@@ -22,25 +21,24 @@ namespace Lucy
 
         // Public Methods 
 
-        public static LucyToys Get(dynamic ViewBag)
+        public static LucyToys Get(dynamic viewBag)
         {
-            var item = ViewBag[LucyToys.KEY];
-            if (item.HasValue)
-            {
-                var lucyToys = item.Value as LucyToys;
-                return lucyToys;
-            }
-            throw new Exception("Lucy's data has not been initialized properly. Derive your view from LucyRazorViewBase.");
+            var item = viewBag[Key];
+            if (!item.HasValue)
+                throw new Exception(
+                    "Lucy's data has not been initialized properly. Derive your view from LucyRazorViewBase.");
+            var lucyToys = item.Value as LucyToys;
+            return lucyToys;
         }
 
-        public static LucyToys GetOrCreate(dynamic ViewBag)
+        public static LucyToys GetOrCreate(dynamic viewBag)
         {
             LucyToys lucyToys = null;
-            var item = ViewBag[LucyToys.KEY];
+            var item = viewBag[Key];
             if (item.HasValue)
                 lucyToys = item.Value as LucyToys;
             if (lucyToys == null)
-                ViewBag[LucyToys.KEY] = lucyToys = new LucyToys();
+                viewBag[Key] = lucyToys = new LucyToys();
             return lucyToys;
         }
 
@@ -50,10 +48,10 @@ namespace Lucy
 
         // Private Methods 
 
-        private ResolveType Resolve<ResolveType>() where ResolveType : class
+        private TResolveType Resolve<TResolveType>() where TResolveType : class
         {
             if (Container != null)
-                return Container.Resolve<ResolveType>();
+                return Container.Resolve<TResolveType>();
             throw new Exception("IoC Container is empty. Call Lucy.LucyEngine.RequestStartup method in your Bootstrapper.RequestStartup.");
         }
 
@@ -61,13 +59,13 @@ namespace Lucy
 
         #region Static Fields
 
-        static string KEY = "_____LucyToys______";
+        private const string Key = "_____LucyToys______";
 
         #endregion Static Fields
 
         #region Fields
 
-        ILucyTextProvider nameProvider;
+        ILucyTextProvider _nameProvider;
 
         #endregion Fields
 
@@ -83,11 +81,11 @@ namespace Lucy
         {
             get
             {
-                if (nameProvider == null)
-                    nameProvider = this.Resolve<ILucyTextProvider>();
-                return nameProvider;
+                return _nameProvider ?? (_nameProvider = Resolve<ILucyTextProvider>());
             }
         }
+
+        public List<Filename> RenderedFiles { get; set; }
 
         public Action<object> WriteLiteral { get; set; }
 

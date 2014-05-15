@@ -2,3 +2,4 @@
 /src/Lucy/bin
 /src/packages
 /src/Lucy/*.nupkg
+/src/Lucy/Bundle/*.csbak
