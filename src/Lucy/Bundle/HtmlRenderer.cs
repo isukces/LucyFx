@@ -30,7 +30,8 @@ namespace Lucy.Bundle
             if (bundle == null)
                 throw new Exception(string.Format("Try to render unregistered bundle {0}", bundlePath));
             if (bundle.BundleType != _supportedBundleType)
-                throw new Exception(string.Format("Bundle {0} type is {1}, expected {2}.", bundlePath, bundle.BundleType, _supportedBundleType));
+                throw new Exception(string.Format("Bundle {0} type is {1}, expected {2}.", bundlePath, bundle.BundleType,
+                    _supportedBundleType));
             LucyToys lucyToys = LucyToys.GetOrCreate(_renderContext.Context.ViewBag);
 
             var filesWithDependencies = bundle.FilesWithDependencies;
@@ -43,22 +44,28 @@ namespace Lucy.Bundle
             if (BundleSettings.Processing == BundleProcessing.ManyFiles)
                 fullPaths = from file in filesWithDependencies
                             select file.GetFullUriPath(_renderContext.Context);
-            else if (filesWithDependencies.Count != originalFilesCount)
-                fullPaths = new[]
-                {
-                    _renderContext.Context.ToFullPath(Bundle.DynamicBundleNameFromFiles(filesWithDependencies))
-                };
             else
+            {
+                var path = filesWithDependencies.Count == originalFilesCount
+                    ? bundle.VirtualPath
+                    : BundleSettings.MakePath(Bundle.DynamicBundleNameFromFiles(filesWithDependencies), _supportedBundleType);
                 fullPaths = new[]
-                {
-                    _renderContext.Context.ToFullPath(bundle.VirtualPath)
-                };
+                    {
+                        _renderContext.Context.ToFullPath(path)
+                    };
+            }
+
 
             lucyToys.RenderedFiles.AddRange(filesWithDependencies);
-            var template = BundleSettings.GetRenderTemplate(bundle.BundleType);
+            var template = BundleSettings.GetRenderTemplate(_supportedBundleType);
+            var separator = BundleSettings.GetSeparator(_supportedBundleType);
             var stringBuilder = new StringBuilder();
             foreach (var fullPath in fullPaths)
+            {
+                if (stringBuilder.Length > 0)
+                    stringBuilder.Append(separator);
                 stringBuilder.AppendFormat(template, fullPath);
+            }
             return new NonEncodedHtmlString(stringBuilder.ToString());
         }
 
@@ -66,8 +73,8 @@ namespace Lucy.Bundle
 
         #region Fields
 
-        private readonly BundleTypes _supportedBundleType;
         private readonly IRenderContext _renderContext;
+        private readonly BundleTypes _supportedBundleType;
 
         #endregion Fields
     }

@@ -1,6 +1,5 @@
 ﻿using System;
 using Nancy;
-using Nancy.ViewEngines.Razor;
 
 namespace Lucy.Bundle
 {
@@ -8,6 +7,12 @@ namespace Lucy.Bundle
     {
         #region Static Methods
 
+        // Public Methods 
+
+        public static void Enable(BundleProcessing processing)
+        {
+            Processing = processing;
+        }
         // Internal Methods 
 
         internal static string GetMimeType(BundleTypes bundleType)
@@ -40,6 +45,36 @@ namespace Lucy.Bundle
             }
         }
 
+        internal static string GetSeparator(BundleTypes bundleType)
+        {
+            switch (bundleType)
+            {
+                case BundleTypes.Script:
+                    return Js.Separator;
+                case BundleTypes.StyleSheet:
+                    return Css.Separator;
+                default:
+                    throw new NotImplementedException(String.Format(
+                        "Unable to find separator for  {0}.{1}",
+                        bundleType.GetType(), bundleType));
+            }
+        }
+
+        internal static string MakePath(string p, BundleTypes bundleType)
+        {
+            switch (bundleType)
+            {
+                case BundleTypes.Script:
+                    return Js.MakePath(p);
+                case BundleTypes.StyleSheet:
+                    return Css.MakePath(p);
+                default:
+                    throw new NotImplementedException(String.Format(
+                        "Unable to make path for  {0}.{1}",
+                        bundleType.GetType(), bundleType));
+            }
+        }
+
         internal static string MakePath(string path, string name, string extension)
         {
             path = path.MakeTildaPrefixedPath().TrimEnd('/');
@@ -54,7 +89,10 @@ namespace Lucy.Bundle
 
         #region Static Fields
 
+        public static readonly StringComparer IgnoreCase = StringComparer.OrdinalIgnoreCase;
         public static char NameSeparator = ',';
+        internal static BundleProcessing Processing;
+        internal static IRootPathProvider RootPathProvider;
 
         #endregion Static Fields
 
@@ -80,11 +118,12 @@ namespace Lucy.Bundle
             #endregion Static Methods
 
             #region Static Fields
-            
+
             public static string BundlePath = "~/bundles/styles/";
             public static string FileExtension = ".css";
-            public static string HtmlRenderTemplate = "    <link rel=\"stylesheet\" href=\"{0}\" />\r\n";
+            public static string HtmlRenderTemplate = "<link rel=\"stylesheet\" href=\"{0}\" />";
             public static string MimeType = "text/css";
+            public static string Separator = "\r\n    ";
 
             #endregion Static Fields
         }
@@ -110,21 +149,12 @@ namespace Lucy.Bundle
 
             public static string BundlePath = "~/bundles/scripts/";
             public static string FileExtension = ".js";
-            public static string HtmlRenderTemplate = "    <script src=\"{0}\"></script>\r\n";
+            public static string HtmlRenderTemplate = "<script src=\"{0}\"></script>";
             public static string MimeType = "text/javascript";
+            public static string Separator = "\r\n    ";
 
             #endregion Static Fields
         }
         #endregion Nested Classes
-
-        public static readonly StringComparer IgnoreCase = StringComparer.OrdinalIgnoreCase;
-
-        public static void Enable(BundleProcessing processing)
-        {
-            Processing = processing;
-        }
-
-        internal static BundleProcessing Processing;
-        internal static IRootPathProvider RootPathProvider;
     }
 }

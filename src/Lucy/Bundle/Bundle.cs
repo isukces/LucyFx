@@ -29,7 +29,7 @@ namespace Lucy.Bundle
         {
             var expanded = from fileName in filesWithDependencies
                            select RegisteredAliases.GetOrCreateAlias(fileName);
-            string autoName = string.Join(BundleSettings.NameSeparator.ToString(), expanded);
+            var autoName = string.Join(BundleSettings.NameSeparator.ToString(), expanded);
             return autoName;
         }
 
@@ -84,7 +84,7 @@ namespace Lucy.Bundle
                 if (!IsDynamic && Name.StartsWith("~/"))
                     return Name;
                 string autoName = IsDynamic ? DynamicBundleNameFromFiles(FilesWithDependencies) : Name;
-                switch (this.BundleType)
+                switch (BundleType)
                 {
                     case BundleTypes.Script:
                         return BundleSettings.Js.MakePath(autoName);
