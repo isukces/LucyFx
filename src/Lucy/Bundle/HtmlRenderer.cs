@@ -35,9 +35,10 @@ namespace Lucy.Bundle
 
             var filesWithDependencies = bundle.FilesWithDependencies;
             var originalFilesCount = filesWithDependencies.Count;
-            filesWithDependencies = (from file in filesWithDependencies
-                                     where lucyToys.RenderedFiles.IndexOf(file) < 0
-                                     select file).ToList();
+            if (lucyToys.RenderedFiles.Count > 0)
+                filesWithDependencies = (from file in filesWithDependencies
+                                         where lucyToys.RenderedFiles.IndexOf(file) < 0
+                                         select file).ToList();
             IEnumerable<string> fullPaths;
             if (BundleSettings.Processing == BundleProcessing.ManyFiles)
                 fullPaths = from file in filesWithDependencies
@@ -54,8 +55,6 @@ namespace Lucy.Bundle
                 };
 
             lucyToys.RenderedFiles.AddRange(filesWithDependencies);
-
-
             var template = BundleSettings.GetRenderTemplate(bundle.BundleType);
             var stringBuilder = new StringBuilder();
             foreach (var fullPath in fullPaths)
