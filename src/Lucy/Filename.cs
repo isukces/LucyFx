@@ -8,10 +8,36 @@ namespace Lucy
         #region Fields
 
         readonly string _name;
+        private static readonly char[] SlashOrBackslash = { '/', '\\' };
 
         #endregion Fields
 
         #region Properties
+
+        public string Extension
+        {
+            get
+            {
+                var shortName = ShortName;
+                if (string.IsNullOrEmpty(shortName))
+                    return "";
+                var lastIndexOfDot = _name.LastIndexOf('.');
+                return lastIndexOfDot < 0 ? "" : _name.Substring(lastIndexOfDot);
+            }
+        }
+
+        public string ShortName
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(_name))
+                    return "";
+                var lastIndexOfSlashOrBackslash = _name.LastIndexOfAny(SlashOrBackslash);
+                return lastIndexOfSlashOrBackslash < 0
+                    ? _name :
+                    _name.Substring(lastIndexOfSlashOrBackslash + 1);
+            }
+        }
 
         public string Name
         {
@@ -43,7 +69,7 @@ namespace Lucy
         public Filename(string name)
             : this()
         {
-            _name = name;
+            _name = (name ?? string.Empty).Trim();
         }
 
         public static implicit operator Filename(string src)
