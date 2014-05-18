@@ -9,9 +9,9 @@ namespace Lucy.Bundle
 
         // Public Methods 
 
-        public static void Enable(BundleProcessing processing)
+        public static void Enable(BundleProcessing _processing)
         {
-            Processing = processing;
+            processing = _processing;
         }
         // Internal Methods 
 
@@ -75,7 +75,7 @@ namespace Lucy.Bundle
             }
         }
 
-        internal static string MakePath(string path, string name, string extension)
+        private static string MakePath(string path, string name, string extension)
         {
             path = path.MakeTildaPrefixedPath().TrimEnd('/');
             name = name.BackslashToSlash().TrimStart('/');
@@ -91,8 +91,8 @@ namespace Lucy.Bundle
 
         public static readonly StringComparer IgnoreCase = StringComparer.OrdinalIgnoreCase;
         public static char NameSeparator = ',';
-        internal static BundleProcessing Processing;
-        internal static IRootPathProvider RootPathProvider;
+        internal static BundleProcessing processing;
+        internal static IRootPathProvider rootPathProvider;
 
         #endregion Static Fields
 

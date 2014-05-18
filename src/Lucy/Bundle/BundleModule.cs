@@ -29,7 +29,7 @@ namespace Lucy.Bundle
             {
                 var name = BundleSettings.Css.MakePath("{names}").TrimStart('~');
                 System.Diagnostics.Debug.WriteLine("BundleModule: register dynamic css " + name);
-                Get[name] = CombinedScriptResponse;
+                Get[name] = CombinedStyleResponse;
             }
             // dynamic js
             {
@@ -51,7 +51,21 @@ namespace Lucy.Bundle
             string names = parameters.names;
             var files = names.Split(BundleSettings.NameSeparator)
                 .Distinct()
-                .Select(alias => ResolveAlias(ref dynamicAliases, alias))
+                .Select(alias => ResolveAlias(ref dynamicAliases, alias, BundleTypes.Script))
+                .ToList();
+            var plain = RegisteredFileDependencies.ResolveDependencies(files);
+            return RenderFiles(BundleTypes.Script, plain);
+        }
+
+
+
+        private static object CombinedStyleResponse(dynamic parameters)
+        {
+            Dictionary<Alias, Filename> dynamicAliases = null;
+            string names = parameters.names;
+            var files = names.Split(BundleSettings.NameSeparator)
+                .Distinct()
+                .Select(alias => ResolveAlias(ref dynamicAliases, alias, BundleTypes.StyleSheet))
                 .ToList();
             var plain = RegisteredFileDependencies.ResolveDependencies(files);
             return RenderFiles(BundleTypes.Script, plain);
@@ -64,7 +78,7 @@ namespace Lucy.Bundle
             foreach (var file in files)
             {
                 file.Check();
-                var fullPath = Path.Combine(BundleSettings.RootPathProvider.GetRootPath(), file.Name.Substring(2));
+                var fullPath = Path.Combine(BundleSettings.rootPathProvider.GetRootPath(), file.Name.Substring(2));
                 if (!File.Exists(fullPath))
                     throw new InvalidOperationException(
                         string.Format("Could not load bundled file {0}", fullPath));
@@ -79,7 +93,7 @@ namespace Lucy.Bundle
         private static object RenderFiles(BundleTypes bundleType, IEnumerable<Filename> files)
         {
             string combined = CombineFiles(files);
-            if (BundleSettings.Processing == BundleProcessing.CombinedMinified)
+            if (BundleSettings.processing == BundleProcessing.CombinedMinified)
             {
                 var minifier = new Microsoft.Ajax.Utilities.Minifier();
                 switch (bundleType)
@@ -100,7 +114,7 @@ namespace Lucy.Bundle
             return new TextResponse(combined, contentType);
         }
 
-        private static Filename ResolveAlias(ref Dictionary<Alias, Filename> dynamicAliases, Alias alias)
+        private static Filename ResolveAlias(ref Dictionary<Alias, Filename> dynamicAliases, Alias alias, BundleTypes bundleType)
         {
             var fileByAlias = RegisteredAliases.GetFileByAlias(alias);
             if (fileByAlias != null)
@@ -111,11 +125,25 @@ namespace Lucy.Bundle
                 dynamicAliases = new Dictionary<Alias, Filename>();
                 foreach (var bundle in RegisteredBundles.GetExplicitBundles())
                     foreach (var file in bundle.FilesWithDependencies)
-                        dynamicAliases[RegisteredAliases.GetOrCreateAlias(file)] = file;
+                    {
+                        var type = GetFileTypeByExtension(file);
+                        if (type == bundleType)
+                            dynamicAliases[RegisteredAliases.GetOrCreateAlias(file)] = file;
+                    }
             }
             if (!dynamicAliases.TryGetValue(alias, out fileName))
                 throw new Exception(string.Format("Unregistered alias {0}", alias));
             return fileName;
+        }
+
+        private static BundleTypes? GetFileTypeByExtension(Filename file)
+        {
+            var ext = file.Extension.ToLowerInvariant();
+            if (ext == ".js")
+                return BundleTypes.Script;
+            if (ext == ".css")
+                return BundleTypes.StyleSheet;
+            return null;
         }
 
         #endregion Static Methods

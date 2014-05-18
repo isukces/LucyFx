@@ -41,7 +41,7 @@ namespace Lucy.Bundle
                                          where lucyToys.RenderedFiles.IndexOf(file) < 0
                                          select file).ToList();
             IEnumerable<string> fullPaths;
-            if (BundleSettings.Processing == BundleProcessing.ManyFiles)
+            if (BundleSettings.processing == BundleProcessing.ManyFiles)
                 fullPaths = from file in filesWithDependencies
                             select file.GetFullUriPath(_renderContext.Context);
             else

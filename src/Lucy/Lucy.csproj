@@ -67,6 +67,7 @@
     <Compile Include="Bundle\LucyBundleRegistration.cs" />
     <Compile Include="Bundle\RegisteredAliases.cs" />
     <Compile Include="DataProcess\DataProcessContainer.cs" />
+    <Compile Include="HtmlDataSerialize.cs" />
     <Compile Include="Filename.cs" />
     <Compile Include="LucyEngine.cs" />
     <Compile Include="_enums_.cs" />

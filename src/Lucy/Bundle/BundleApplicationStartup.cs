@@ -9,7 +9,7 @@ namespace Lucy.Bundle
 
         public BundleApplicationStartup(IRootPathProvider rootPathProvider)
         {
-            BundleSettings.RootPathProvider = rootPathProvider;
+            BundleSettings.rootPathProvider = rootPathProvider;
         }
 
         #endregion Constructors
