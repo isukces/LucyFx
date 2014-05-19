@@ -10,7 +10,7 @@ namespace Lucy.Bundle
 {
     public class BundleModule : NancyModule
     {
-        #region Constructors
+		#region Constructors 
 
         public BundleModule()
         {
@@ -39,11 +39,11 @@ namespace Lucy.Bundle
             }
         }
 
-        #endregion Constructors
+		#endregion Constructors 
 
-        #region Static Methods
+		#region Static Methods 
 
-        // Private Methods 
+		// Private Methods 
 
         private static object CombinedScriptResponse(dynamic parameters)
         {
@@ -56,8 +56,6 @@ namespace Lucy.Bundle
             var plain = RegisteredFileDependencies.ResolveDependencies(files);
             return RenderFiles(BundleTypes.Script, plain);
         }
-
-
 
         private static object CombinedStyleResponse(dynamic parameters)
         {
@@ -116,7 +114,8 @@ namespace Lucy.Bundle
 
         private static Filename ResolveAlias(ref Dictionary<Alias, Filename> dynamicAliases, Alias alias, BundleTypes bundleType)
         {
-            var fileByAlias = RegisteredAliases.GetFileByAlias(alias);
+            var alias1 = new AliasBundleType(alias, bundleType);
+            var fileByAlias = RegisteredAliases.GetFileByAlias(alias1 );
             if (fileByAlias != null)
                 return fileByAlias.Value;
             Filename fileName;
@@ -135,8 +134,9 @@ namespace Lucy.Bundle
                 throw new Exception(string.Format("Unregistered alias {0}", alias));
             return fileName;
         }
+		// Internal Methods 
 
-        private static BundleTypes? GetFileTypeByExtension(Filename file)
+        internal static BundleTypes? GetFileTypeByExtension(Filename file)
         {
             var ext = file.Extension.ToLowerInvariant();
             if (ext == ".js")
@@ -146,11 +146,11 @@ namespace Lucy.Bundle
             return null;
         }
 
-        #endregion Static Methods
+		#endregion Static Methods 
 
-        #region Methods
+		#region Methods 
 
-        // Private Methods 
+		// Private Methods 
 
         object BundleByVirtualPathResponse(dynamic parameters)
         {
@@ -160,6 +160,6 @@ namespace Lucy.Bundle
                 : RenderFiles(bundle.BundleType, bundle.FilesWithDependencies);
         }
 
-        #endregion Methods
+		#endregion Methods 
     }
 }

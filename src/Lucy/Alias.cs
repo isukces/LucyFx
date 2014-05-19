@@ -20,6 +20,14 @@ namespace Lucy
             }
         }
 
+        public bool IsEmpty
+        {
+            get
+            {
+                return string.IsNullOrEmpty(_name);
+            }
+        }
+
         #endregion Properties
 
         #region Methods
@@ -27,7 +35,7 @@ namespace Lucy
         public Alias(string name)
             : this()
         {
-            _name = name;
+            _name = name == null ? string.Empty : name.Trim();
         }
 
         public static implicit operator Alias(string src)

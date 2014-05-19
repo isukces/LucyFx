@@ -1,6 +1,7 @@
 ﻿using Nancy.Helpers;
 using Nancy.ModelBinding;
 using Nancy.Validation;
+using Nancy.ViewEngines;
 using Nancy.ViewEngines.Razor;
 using System;
 using System.Collections.Generic;
@@ -14,7 +15,7 @@ using Nancy.Extensions;
 namespace Lucy
 {
     // ReSharper disable once UnusedMember.Global
-    public static class HtmlUtilsExtensions
+    public static class HtmlHelpersExtensions
     {
         #region Static Methods
 
@@ -93,9 +94,9 @@ namespace Lucy
                 //name="GroupName" 
                 //value="Foundation" 
                 //type="text">
-                var toys = x.GetLucyToys();
-                toys.Javascripts.Add("/Scripts/jquery.validate.js");
-                toys.Javascripts.Add("/Scripts/jquery.validate.unobtrusive.js");
+                var toys = x.RenderContext.GetLucyToys();
+                toys.JavascriptBundle.Include("~/Scripts/jquery.validate.js");
+                toys.JavascriptBundle.Include("~/Scripts/jquery.validate.unobtrusive.js");
                 markup = attr.CompileToAttributesWithSelfClosingTag("input");
             }
             else
@@ -119,15 +120,7 @@ namespace Lucy
             return MakeSimpleInput(helpers, expression, "hidden");
         }
 
-        public static IHtmlString LabelFor<TModel>(this HtmlHelpers<TModel> x, Expression<Func<TModel, object>> forNameExpression, dynamic htmlAttributes = null)
-        {
-            var member = forNameExpression.GetTargetMemberInfo();
-            var toys = GetLucyToys(x);
-            var text = toys.NameProvider.GetLabelForObjectMember(member, x.CurrentLocale);
-            return LabelFor2(member.Name, text, htmlAttributes);
-        }
-
-        public static IHtmlString LabelFor2(string forName, string text, dynamic htmlAttributes = null)
+        public static IHtmlString LabelFor(string forName, string text, dynamic htmlAttributes = null)
         {
             var attr = new Dictionary<string, string>
             {
@@ -136,6 +129,26 @@ namespace Lucy
             attr.Append((object)htmlAttributes);
             var markup = attr.CompileToAttributesWithTag("label", HttpUtility.HtmlEncode(text));
             return new NonEncodedHtmlString(markup);
+        }
+
+        public static IHtmlString LabelFor<TModel>(this HtmlHelpers<TModel> htmlHelpers, Expression<Func<TModel, object>> forNameExpression, dynamic htmlAttributes = null)
+        {
+            return LabelForMember(htmlHelpers, htmlAttributes, forNameExpression.GetTargetMemberInfo());
+        }
+
+        public static IHtmlString LabelForItem<TModel>(this HtmlHelpers<IList<TModel>> htmlHelpers, Expression<Func<TModel, object>> forNameExpression, dynamic htmlAttributes = null)
+        {
+            return LabelForMember(htmlHelpers, htmlAttributes, forNameExpression.GetTargetMemberInfo());
+        }
+
+        public static IHtmlString LabelForItem<TModel>(this HtmlHelpers<IEnumerable<TModel>> htmlHelpers, Expression<Func<TModel, object>> forNameExpression, dynamic htmlAttributes = null)
+        {
+            return LabelForMember(htmlHelpers, htmlAttributes, forNameExpression.GetTargetMemberInfo());
+        }
+
+        public static IHtmlString LabelForItem<TModel>(this HtmlHelpers<TModel[]> htmlHelpers, Expression<Func<TModel, object>> forNameExpression, dynamic htmlAttributes = null)
+        {
+            return LabelForMember(htmlHelpers, htmlAttributes, forNameExpression.GetTargetMemberInfo());
         }
 
         public static IHtmlString Link<TModel>(this HtmlHelpers<TModel> x, string label, string url, dynamic htmlAttributes = null)
@@ -154,7 +167,7 @@ namespace Lucy
 
         public static IDisposable OpenClose<TModel>(this HtmlHelpers<TModel> x, string tag, params string[] attr)
         {
-            var lucyToys = x.GetLucyToys();
+            var lucyToys = x.RenderContext.GetLucyToys();
             var sb = new StringBuilder();
             sb.Append("<" + tag);
             if (attr != null)
@@ -165,32 +178,6 @@ namespace Lucy
             string closingTag = "</" + tag + ">";
             lucyToys.WriteLiteral(openingTag);
             return new DisposableWithAction(() => lucyToys.WriteLiteral(closingTag));
-        }
-
-        public static IDisposable OpenClose<TModel>(this HtmlHelpers<TModel> x, string tag, Dictionary<string, string> noEncodedAttributes)
-        {
-            var lucyToys = x.GetLucyToys();
-            var sb = new StringBuilder();
-            sb.Append("<" + tag);
-            if (noEncodedAttributes != null)
-                foreach (var kv in noEncodedAttributes)
-                    sb.AppendFormat(" {0}=\"{1}\"", HttpUtility.HtmlEncode(kv.Key), HttpUtility.HtmlEncode(kv.Value));
-            sb.AppendFormat(">");
-            string openingTag = sb.ToString();
-            lucyToys.WriteLiteral(openingTag);
-            string closingTag = "</" + tag + ">";
-            return new DisposableWithAction(() => lucyToys.WriteLiteral(closingTag));
-        }
-
-        public static IHtmlString RenderScripts<TModel>(this HtmlHelpers<TModel> x)
-        {
-            var toys = GetLucyToys(x);
-            if (!toys.Javascripts.Any()) 
-                return new NonEncodedHtmlString(string.Empty);
-            var sb = new StringBuilder();
-            foreach (var i in toys.Javascripts.Distinct())
-                sb.AppendFormat("<script src=\"{0}\"></script>\r\n", i);
-            return new NonEncodedHtmlString(sb.ToString());
         }
 
         public static bool UserIsInRole<TModel>(this HtmlHelpers<TModel> x, string role)
@@ -248,7 +235,7 @@ namespace Lucy
 
         private static ModelBindingException GetModelBindingException<TModel>(HtmlHelpers<TModel> x)
         {
-            LucyToys lt = x.GetLucyToys();
+            LucyToys lt = x.RenderContext.GetLucyToys();
             ModelBindingException exception = lt.AttachedExceptions.OfType<ModelBindingException>().FirstOrDefault();
             return exception;
         }
@@ -264,9 +251,16 @@ namespace Lucy
 
         private static string GetTranslation<TModel>(this HtmlHelpers<TModel> x, string text)
         {
-            var toys = GetLucyToys(x);
+            var toys = GetLucyToys(x.RenderContext);
             text = toys.NameProvider.GetTranslation(text, x.CurrentLocale);
             return text;
+        }
+
+        private static IHtmlString LabelForMember<TModel>(HtmlHelpers<TModel> x, dynamic htmlAttributes, MemberInfo member)
+        {
+            var toys = GetLucyToys(x.RenderContext);
+            var text = toys.NameProvider.GetLabelForObjectMember(member, x.CurrentLocale);
+            return LabelFor(member.Name, text, htmlAttributes);
         }
 
         private static IHtmlString MakeSimpleInput<T>(HtmlHelpers<T> helpers, Expression<Func<T, object>> expression, string tagName)
@@ -281,11 +275,26 @@ namespace Lucy
                 HttpUtility.HtmlEncode(HtmlDataSerialize.ToString(value)));
             return new NonEncodedHtmlString(markup);
         }
+
+        private static IDisposable OpenClose<TModel>(this HtmlHelpers<TModel> x, string tag, Dictionary<string, string> noEncodedAttributes)
+        {
+            var lucyToys = x.RenderContext.GetLucyToys();
+            var sb = new StringBuilder();
+            sb.Append("<" + tag);
+            if (noEncodedAttributes != null)
+                foreach (var kv in noEncodedAttributes)
+                    sb.AppendFormat(" {0}=\"{1}\"", HttpUtility.HtmlEncode(kv.Key), HttpUtility.HtmlEncode(kv.Value));
+            sb.AppendFormat(">");
+            string openingTag = sb.ToString();
+            lucyToys.WriteLiteral(openingTag);
+            string closingTag = "</" + tag + ">";
+            return new DisposableWithAction(() => lucyToys.WriteLiteral(closingTag));
+        }
         // Internal Methods 
 
-        internal static LucyToys GetLucyToys<TModel>(this HtmlHelpers<TModel> x)
+        internal static LucyToys GetLucyToys(this IRenderContext x)
         {
-            return LucyToys.Get(x.RenderContext.Context.ViewBag);
+            return LucyToys.Get(x.Context.ViewBag);
         }
 
         #endregion Static Methods

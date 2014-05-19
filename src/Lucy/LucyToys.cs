@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Lucy.Bundle;
 using Lucy.TextProviders;
 
 namespace Lucy
@@ -10,7 +11,11 @@ namespace Lucy
 
         private LucyToys()
         {
-            Javascripts = new List<string>();
+            JavascriptBundle = new Bundle.Bundle("lucyDynamicBundle", BundleTypes.Script, null)
+            {
+                IsDynamic = true
+            };
+            RegisteredBundles.AddBundle(JavascriptBundle);
             AttachedExceptions = new List<Exception>();
             RenderedFiles = new List<Filename>();
         }
@@ -75,7 +80,8 @@ namespace Lucy
 
         public Nancy.TinyIoc.TinyIoCContainer Container { get; set; }
 
-        public List<string> Javascripts { get; private set; }
+        public Bundle.Bundle JavascriptBundle { get; private set; }
+
 
         public ILucyTextProvider NameProvider
         {

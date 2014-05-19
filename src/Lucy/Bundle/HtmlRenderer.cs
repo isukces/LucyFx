@@ -29,8 +29,13 @@ namespace Lucy.Bundle
             var bundle = RegisteredBundles.GetBundleByName(bundlePath);
             if (bundle == null)
                 throw new Exception(string.Format("Try to render unregistered bundle {0}", bundlePath));
+            return Render(bundle);
+        }
+
+        internal IHtmlString Render(Bundle bundle)
+        {
             if (bundle.BundleType != _supportedBundleType)
-                throw new Exception(string.Format("Bundle {0} type is {1}, expected {2}.", bundlePath, bundle.BundleType,
+                throw new Exception(string.Format("Bundle {0} type is {1}, expected {2}.", bundle.VirtualPath, bundle.BundleType,
                     _supportedBundleType));
             LucyToys lucyToys = LucyToys.GetOrCreate(_renderContext.Context.ViewBag);
 
@@ -38,21 +43,21 @@ namespace Lucy.Bundle
             var originalFilesCount = filesWithDependencies.Count;
             if (lucyToys.RenderedFiles.Count > 0)
                 filesWithDependencies = (from file in filesWithDependencies
-                                         where lucyToys.RenderedFiles.IndexOf(file) < 0
-                                         select file).ToList();
+                    where lucyToys.RenderedFiles.IndexOf(file) < 0
+                    select file).ToList();
             IEnumerable<string> fullPaths;
             if (BundleSettings.processing == BundleProcessing.ManyFiles)
                 fullPaths = from file in filesWithDependencies
-                            select file.GetFullUriPath(_renderContext.Context);
+                    select file.GetFullUriPath(_renderContext.Context);
             else
             {
                 var path = filesWithDependencies.Count == originalFilesCount
                     ? bundle.VirtualPath
                     : BundleSettings.MakePath(Bundle.DynamicBundleNameFromFiles(filesWithDependencies), _supportedBundleType);
                 fullPaths = new[]
-                    {
-                        _renderContext.Context.ToFullPath(path)
-                    };
+                {
+                    _renderContext.Context.ToFullPath(path)
+                };
             }
 
 

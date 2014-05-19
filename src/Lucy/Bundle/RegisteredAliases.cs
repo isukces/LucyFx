@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Lucy.Bundle
 {
@@ -10,64 +7,59 @@ namespace Lucy.Bundle
     {
         #region Static Methods
 
-        // Public Methods 
+        // Internal Methods 
+
+        internal static Filename? GetFileByAlias(AliasBundleType alias)
+        {
+            Filename filename;
+            return ByAlias.TryGetValue(alias, out filename)
+                ? filename
+                : null;
+        }
+
+        internal static Alias GetOrCreateAlias(Filename fileName)
+        {
+            fileName.Check();
+            AliasBundleType aliasBundleType;
+            if (ByFilename.TryGetValue(fileName, out aliasBundleType))
+                return aliasBundleType.Alias;
+            var shortName = fileName.ShortNameWithoutExtension;
+            shortName = shortName.Replace(".", "-");
+            return shortName;
+        }
 
         internal static void RegisterAlias(Filename fileName, Alias alias)
         {
             fileName.Check();
             alias.Check();
-
-            {
-                Alias existingAlias;
-                if (byFilename.TryGetValue(fileName, out existingAlias))
-                    if (!existingAlias.Equals(alias))
-                        throw new Exception(
-                            string.Format("Unable to register alias '{0}' for file '{1}'. It already has alias '{2}'.",
-                            alias, fileName, existingAlias));
-            }
-            {
-                Filename existingFileName;
-                if (byAlias.TryGetValue(alias, out existingFileName))
-                    if (!existingFileName.Equals(fileName))
-                        throw new Exception(
-                            string.Format("Unable to register alias '{0}' for file '{1}' because it has already been registered for file '{2}'.",
+            var type = BundleModule.GetFileTypeByExtension(fileName);
+            if (!type.HasValue)
+                throw new Exception("Unable to get file type from " + fileName);
+            AliasBundleType aliasBundleType;
+            if (ByFilename.TryGetValue(fileName, out aliasBundleType))
+                if (!aliasBundleType.Alias.Equals(alias))
+                    throw new Exception(
+                        string.Format("Unable to register alias '{0}' for file '{1}'. It already has alias '{2}'.",
+                            alias, fileName, aliasBundleType));
+            aliasBundleType = new AliasBundleType(alias, type.Value);
+            Filename existingFileName;
+            if (ByAlias.TryGetValue(aliasBundleType, out existingFileName))
+                if (!existingFileName.Equals(fileName))
+                    throw new Exception(
+                        string.Format(
+                            "Unable to register alias '{0}' for file '{1}' because it has already been registered for file '{2}'.",
                             alias, fileName, existingFileName));
-            }
-            byAlias[alias] = fileName;
-            byFilename[fileName] = alias;
-        }
-        // Internal Methods 
-
-        internal static Alias GetOrCreateAlias(Filename fileName)
-        {
-            fileName.Check();
-            Alias alias;
-            if (byFilename.TryGetValue(fileName, out alias))
-                return alias;
-            var shortName = fileName.Name.Split('/').Last().ToLower();
-            if (shortName.EndsWith(".js"))
-                shortName = shortName.Substring(0, shortName.Length - 3);
-            else if (shortName.EndsWith(".css"))
-                shortName = shortName.Substring(0, shortName.Length - 4);
-            shortName = shortName.Replace(".", "-");
-            return shortName;
+            ByAlias[aliasBundleType] = fileName;
+            ByFilename[fileName] = aliasBundleType;
         }
 
         #endregion Static Methods
 
         #region Static Fields
 
-        static readonly Dictionary<Alias, Filename> byAlias = new Dictionary<Alias, Filename>();
-        static readonly Dictionary<Filename, Alias> byFilename = new Dictionary<Filename, Alias>();
+        static readonly Dictionary<AliasBundleType, Filename> ByAlias = new Dictionary<AliasBundleType, Filename>();
+        static readonly Dictionary<Filename, AliasBundleType> ByFilename = new Dictionary<Filename, AliasBundleType>();
 
         #endregion Static Fields
-
-        internal static Filename? GetFileByAlias(Alias alias)
-        {
-            Filename fn;
-            if (byAlias.TryGetValue(alias, out fn))
-                return fn;
-            return null;
-        }
     }
 }

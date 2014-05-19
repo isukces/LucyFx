@@ -16,7 +16,7 @@ namespace Lucy
         public static void CheckAlias(this string alias)
         {
             if (aliasRegexp == null)
-                aliasRegexp = new Regex("^[a-z][a-z0-9]*$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+                aliasRegexp = new Regex("^[a-z][-a-z0-9]*$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
             if (!aliasRegexp.IsMatch(alias))
                 throw new Exception(string.Format("Invalid alias '{0}'. Valid alias starts with latin letter optionally followed by latin letters or digits.", alias));
             // for future use

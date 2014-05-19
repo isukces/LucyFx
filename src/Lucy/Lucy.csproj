@@ -54,6 +54,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Alias.cs" />
+    <Compile Include="Bundle\BundleHtmlHelpersExtensions.cs" />
     <Compile Include="Bundle\HtmlRenderer.cs" />
     <Compile Include="Bundle\Bundle.cs" />
     <Compile Include="Bundle\BundleModule.cs" />
@@ -71,6 +72,7 @@
     <Compile Include="Filename.cs" />
     <Compile Include="LucyEngine.cs" />
     <Compile Include="_enums_.cs" />
+    <Compile Include="Bundle\AliasBundleType.cs" />
     <Compile Include="_Extensions\ListExtensions.cs" />
     <Compile Include="_Extensions\NancyContextExtensions.cs" />
     <Compile Include="_Extensions\NancyModuleExtension.cs" />
@@ -82,7 +84,7 @@
     <Compile Include="TextProviders\ILucyTextProvider.cs" />
     <Compile Include="LucyApplicationRegistrations.cs" />
     <Compile Include="_Extensions\DictionaryExtensions.cs" />
-    <Compile Include="_Extensions\HtmlUtilsExtensions.cs" />
+    <Compile Include="_Extensions\HtmlHelpersExtensions.cs" />
     <Compile Include="LucyModule.cs" />
     <Compile Include="LucyToys.cs" />
     <Compile Include="LucyRazorViewBase.cs" />

@@ -26,6 +26,18 @@ namespace Lucy
             }
         }
 
+        public string ShortNameWithoutExtension
+        {
+            get
+            {
+                var shortName =  ShortName;
+                var ex =  Extension;
+                return !string.IsNullOrEmpty(ex) 
+                    ? shortName.Substring(0, shortName.Length - ex.Length) 
+                    : shortName;
+            }
+        }
+
         public string ShortName
         {
             get

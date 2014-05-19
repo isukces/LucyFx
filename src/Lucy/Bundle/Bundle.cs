@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace Lucy.Bundle
@@ -29,7 +30,7 @@ namespace Lucy.Bundle
         {
             var expanded = from fileName in filesWithDependencies
                            select RegisteredAliases.GetOrCreateAlias(fileName);
-            var autoName = string.Join(BundleSettings.NameSeparator.ToString(), expanded);
+            var autoName = string.Join(BundleSettings.NameSeparator.ToString(CultureInfo.InvariantCulture), expanded);
             return autoName;
         }
 
@@ -41,13 +42,13 @@ namespace Lucy.Bundle
 
         public Bundle Include(Filename fileName)
         {
-            fileName.Check();
-            Files.AddIfNotExists(fileName);
-            return this;
+           return Include(fileName, default(Alias));
         }
 
         public Bundle Include(Filename fileName, Alias alias)
         {
+            if (alias.IsEmpty)
+                alias = RegisteredAliases.GetOrCreateAlias(fileName);
             fileName.Check();
             Files.AddIfNotExists(fileName);
             RegisteredAliases.RegisterAlias(fileName, alias);
