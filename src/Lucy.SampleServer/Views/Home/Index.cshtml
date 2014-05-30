@@ -1,0 +1,25 @@
+﻿@using Lucy
+@inherits LucyRazorViewBase<dynamic>
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+        <title>@ViewBag.Title</title>
+
+        @Styles.Render("mystyle")
+
+    </head>    
+<body>
+    <div class="header">
+        <h1>H1 demo: bold, italic, candy pink</h1>
+        <p>Paragraph demo, dark sienna </p>
+        <ul>
+            <li>@Html.Link("Source Header CSS", "~/assets/css/header.css")</li>
+            <li>@Html.Link("Source Other CSS", "~/assets/css/other.css")</li>
+            <li>@Html.Link("Bundled mylabel", "~/bundles/styles/mystyle.css")</li>
+        </ul>
+
+    </div>
+</body>
+</html>
+   

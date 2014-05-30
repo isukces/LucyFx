@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30324.0
+VisualStudioVersion = 12.0.30501.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lucy", "Lucy\Lucy.csproj", "{292E475B-0832-423F-B3AB-2794B736803B}"
 EndProject
@@ -11,6 +11,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{B53E5A
 		.nuget\NuGet.exe = .nuget\NuGet.exe
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{9C4A3A13-A325-4172-8C15-BF41637D26D5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lucy.SampleServer", "Lucy.SampleServer\Lucy.SampleServer.csproj", "{F0C14D05-2317-4267-B09A-E640044E22B3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -22,16 +26,23 @@ Global
 		{292E475B-0832-423F-B3AB-2794B736803B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{292E475B-0832-423F-B3AB-2794B736803B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{292E475B-0832-423F-B3AB-2794B736803B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F0C14D05-2317-4267-B09A-E640044E22B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F0C14D05-2317-4267-B09A-E640044E22B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F0C14D05-2317-4267-B09A-E640044E22B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F0C14D05-2317-4267-B09A-E640044E22B3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F0C14D05-2317-4267-B09A-E640044E22B3} = {9C4A3A13-A325-4172-8C15-BF41637D26D5}
+	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		BuildVersion_DetectChanges = False
-		BuildVersion_StartDate = 2000/1/1
-		BuildVersion_UpdateFileVersion = True
-		BuildVersion_UpdateAssemblyVersion = True
-		BuildVersion_BuildVersioningStyle = None.None.DeltaBaseYearDayOfYear.Increment
 		BuildVersion_UseGlobalSettings = False
+		BuildVersion_BuildVersioningStyle = None.None.DeltaBaseYearDayOfYear.Increment
+		BuildVersion_UpdateAssemblyVersion = True
+		BuildVersion_UpdateFileVersion = True
+		BuildVersion_StartDate = 2000/1/1
+		BuildVersion_DetectChanges = False
 	EndGlobalSection
 EndGlobal
