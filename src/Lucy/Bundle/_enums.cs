@@ -17,7 +17,13 @@
     }
     public enum BundleTypes
     {
+        /// <summary>
+        /// JavaScript
+        /// </summary>
         Script,
+        /// <summary>
+        /// Css style sheet
+        /// </summary>
         StyleSheet
     }
 }

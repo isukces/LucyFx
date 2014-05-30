@@ -55,6 +55,7 @@
   <ItemGroup>
     <Compile Include="Alias.cs" />
     <Compile Include="Bundle\BundleCache.cs" />
+    <Compile Include="Bundle\BundleCacheItem.cs" />
     <Compile Include="Bundle\BundleHtmlHelpersExtensions.cs" />
     <Compile Include="Bundle\HtmlRenderer.cs" />
     <Compile Include="Bundle\Bundle.cs" />
@@ -113,7 +114,7 @@ xcopy /s /y /R "$(SolutionDir)packages\Nancy.Viewengines.Razor.0.22.2\lib\Net40\
   </PropertyGroup>
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties BuildVersion_UseGlobalSettings="True" />
+      <UserProperties BuildVersion_UpdateFileVersion="True" BuildVersion_UpdateAssemblyVersion="True" BuildVersion_DetectChanges="False" BuildVersion_StartDate="2000/1/1" BuildVersion_BuildVersioningStyle="None.None.DeltaBaseYearDayOfYear.Increment" BuildVersion_UseGlobalSettings="False" />
     </VisualStudio>
   </ProjectExtensions>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
