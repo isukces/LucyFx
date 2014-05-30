@@ -15,7 +15,7 @@ using Nancy.Extensions;
 namespace Lucy
 {
     // ReSharper disable once UnusedMember.Global
-    public static class HtmlHelpersExtensions
+    public static class LucyHtmlHelpersExtensions
     {
         #region Static Methods
 
@@ -262,8 +262,9 @@ namespace Lucy
             var text = toys.NameProvider.GetLabelForObjectMember(member, x.CurrentLocale);
             return LabelFor(member.Name, text, htmlAttributes);
         }
+ 
 
-        private static IHtmlString MakeSimpleInput<T>(HtmlHelpers<T> helpers, Expression<Func<T, object>> expression, string tagName)
+        public static IHtmlString MakeSimpleInput<T>(HtmlHelpers<T> helpers, Expression<Func<T, object>> expression, string tagName)
         {
             var member = expression.GetTargetMemberInfo();
             var func = expression.Compile();
@@ -272,6 +273,16 @@ namespace Lucy
             var markup = string.Format("<input type=\"{0}\" name=\"{1}\" value=\"{2}\" />",
                 tagName,
                 HttpUtility.HtmlEncode(member.Name),
+                HttpUtility.HtmlEncode(HtmlDataSerialize.ToString(value)));
+            return new NonEncodedHtmlString(markup);
+        }
+
+        public static IHtmlString MakeSimpleInput<T>(HtmlHelpers<T> helpers, string memberName, object value, string tagName)
+        {
+      
+            var markup = string.Format("<input type=\"{0}\" name=\"{1}\" value=\"{2}\" />",
+                tagName,
+                HttpUtility.HtmlEncode(memberName),
                 HttpUtility.HtmlEncode(HtmlDataSerialize.ToString(value)));
             return new NonEncodedHtmlString(markup);
         }
