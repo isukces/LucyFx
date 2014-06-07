@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
 
 namespace Lucy.Bundle
 {
@@ -20,29 +21,59 @@ namespace Lucy.Bundle
 
         internal static Bundle AddBundle(Bundle bundle)
         {
-            //foreach (var i in files)
-            //    GetOrRegister(i);
-            //var bf = new Bundle(name, type, files);
-            ExplicitBundlesByName[bundle.Name] = bundle;
-            ExplicitBundlesByPath[bundle.VirtualPath] = bundle;
+            Lock.EnterWriteLock();
+            try
+            {
+                ExplicitBundlesByName[bundle.Name] = bundle;
+                ExplicitBundlesByPath[bundle.VirtualPath] = bundle;
+            }
+            finally
+            {
+                Lock.ExitWriteLock();
+            }
             return bundle;
         }
 
         internal static Bundle GetBundleByName(string path)
         {
-            Bundle result;
-            return ExplicitBundlesByName.TryGetValue(path, out result) ? result : null;
+            Lock.EnterReadLock();
+            try
+            {
+                Bundle result;
+                return ExplicitBundlesByName.TryGetValue(path, out result) ? result : null;
+            }
+            finally
+            {
+                Lock.ExitReadLock();
+            }
         }
 
         internal static Bundle GetBundleByPath(string path)
         {
-            Bundle result;
-            return ExplicitBundlesByPath.TryGetValue(path, out result) ? result : null;
+            Lock.EnterReadLock();
+            try
+            {
+                Bundle result;
+                return ExplicitBundlesByPath.TryGetValue(path, out result) ? result : null;
+            }
+            finally
+            {
+                Lock.ExitReadLock();
+            }
         }
 
         internal static IEnumerable<Bundle> GetExplicitBundles()
         {
-            return ExplicitBundlesByName.Values;
+            Lock.EnterReadLock();
+            try
+            {
+                return ExplicitBundlesByName.Values;
+            }
+            finally
+            {
+                Lock.ExitReadLock();
+            }
+
         }
 
         #endregion Static Methods
@@ -51,6 +82,7 @@ namespace Lucy.Bundle
 
         static readonly Dictionary<string, Bundle> ExplicitBundlesByName;
         static readonly Dictionary<string, Bundle> ExplicitBundlesByPath;
+        static readonly ReaderWriterLockSlim Lock = new ReaderWriterLockSlim();
 
         #endregion Static Fields
     }

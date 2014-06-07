@@ -32,8 +32,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AjaxMin">
-      <HintPath>..\..\..\..\..\conexx\Conexx-Cloud\packages\AjaxMin.5.9.5229.26438\lib\net40\AjaxMin.dll</HintPath>
+    <Reference Include="AjaxMin, Version=5.10.5260.16954, Culture=neutral, PublicKeyToken=21ef50ce11b5d80f, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\AjaxMin.5.10.5260.16959\lib\net40\AjaxMin.dll</HintPath>
     </Reference>
     <Reference Include="Nancy">
       <HintPath>..\packages\Nancy.0.22.2\lib\net40\Nancy.dll</HintPath>
@@ -66,16 +67,15 @@
     <Compile Include="Bundle\RegisteredFileDependencies.cs" />
     <Compile Include="Bundle\BundleApplicationStartup.cs" />
     <Compile Include="Bundle\_enums.cs" />
-    <Compile Include="Bundle\IBundleConfig.cs" />
     <Compile Include="Bundle\LucyBundleRegistration.cs" />
     <Compile Include="Bundle\RegisteredAliases.cs" />
+    <Compile Include="ConcurrentContainer.cs" />
     <Compile Include="DataProcess\DataProcessContainer.cs" />
     <Compile Include="HtmlDataSerialize.cs" />
     <Compile Include="Filename.cs" />
     <Compile Include="LucyEngine.cs" />
     <Compile Include="_enums_.cs" />
     <Compile Include="Bundle\AliasBundleType.cs" />
-    <Compile Include="_Extensions\ListExtensions.cs" />
     <Compile Include="_Extensions\LucyIHtmlStringExtensions.cs" />
     <Compile Include="_Extensions\NancyContextExtensions.cs" />
     <Compile Include="_Extensions\NancyModuleExtension.cs" />
@@ -114,7 +114,7 @@ xcopy /s /y /R "$(SolutionDir)packages\Nancy.Viewengines.Razor.0.22.2\lib\Net40\
   </PropertyGroup>
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties BuildVersion_UpdateFileVersion="True" BuildVersion_UpdateAssemblyVersion="True" BuildVersion_DetectChanges="False" BuildVersion_StartDate="2000/1/1" BuildVersion_BuildVersioningStyle="None.None.DeltaBaseYearDayOfYear.Increment" BuildVersion_UseGlobalSettings="False" />
+      <UserProperties BuildVersion_UseGlobalSettings="False" BuildVersion_BuildVersioningStyle="None.None.DeltaBaseYearDayOfYear.Increment" BuildVersion_StartDate="2000/1/1" BuildVersion_DetectChanges="False" BuildVersion_UpdateAssemblyVersion="True" BuildVersion_UpdateFileVersion="True" />
     </VisualStudio>
   </ProjectExtensions>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -2,14 +2,27 @@
 {
     public abstract class LucyBundleRegistration
     {
+        #region Static Methods
+
+        // Private Methods 
+
+        private static Bundle AddBundle(string name, BundleTypes type)
+        {
+            var bundle = new Bundle(name, type, null);
+            return RegisteredBundles.AddBundle(bundle);
+        }
+
+        #endregion Static Methods
+
         #region Methods
 
         // Protected Methods 
 
-        protected Bundle AddScriptBundle(string name)
+        protected void AddDependency(string baseFile, params string[] dependencies)
         {
-            return AddBundle(name, BundleTypes.Script);
+            RegisteredFileDependencies.AddDependency(baseFile, dependencies);
         }
+
         protected Bundle AddDynamicScriptBundle(string name)
         {
             var bundle = AddBundle(name, BundleTypes.Script);
@@ -17,26 +30,19 @@
             return bundle;
         }
 
-        protected void RegisterAlias(Filename fileName, Alias alias)
+        protected Bundle AddScriptBundle(string name)
         {
-            RegisteredAliases.RegisterAlias(fileName, alias);
-        }
-
-        protected void AddDependency(string baseFile, params string[] dependencies)
-        {
-            RegisteredFileDependencies.AddDependency(baseFile, dependencies);
+            return AddBundle(name, BundleTypes.Script);
         }
 
         protected Bundle AddStyleBundle(string name)
         {
             return AddBundle(name, BundleTypes.StyleSheet);
         }
-        // Private Methods 
 
-        private Bundle AddBundle(string name, BundleTypes type)
+        protected void RegisterAlias(Filename fileName, Alias alias)
         {
-            var bundle = new Bundle(name, type, null);
-            return RegisteredBundles.AddBundle(bundle);
+            RegisteredAliases.RegisterAlias(fileName, alias);
         }
 
         #endregion Methods

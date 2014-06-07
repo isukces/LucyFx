@@ -13,7 +13,7 @@ namespace Lucy.Bundle
         internal Bundle(string name, BundleTypes bundleType, IEnumerable<Filename> files)
         {
             Name = name;
-            Files = new List<Filename>();
+            _files = new ConcurrentContainer<Filename>();
             if (files != null)
                 foreach (var i in files)
                     Include(i);
@@ -36,38 +36,21 @@ namespace Lucy.Bundle
 
         #endregion Static Methods
 
-        #region Methods
+        #region Fields
 
-        // Public Methods 
+        private readonly ConcurrentContainer<Filename> _files;
 
-        public Bundle Include(Filename fileName)
-        {
-           return Include(fileName, default(Alias));
-        }
-
-        public Bundle Include(Filename fileName, Alias alias)
-        {
-            if (alias.IsEmpty)
-                alias = RegisteredAliases.GetOrCreateAlias(fileName);
-            fileName.Check();
-            Files.AddIfNotExists(fileName);
-            RegisteredAliases.RegisterAlias(fileName, alias);
-            return this;
-        }
-
-        #endregion Methods
+        #endregion Fields
 
         #region Properties
 
         public BundleTypes BundleType { get; private set; }
 
-        public List<Filename> Files { get; private set; }
-
         public List<Filename> FilesWithDependencies
         {
             get
             {
-                return RegisteredFileDependencies.ResolveDependencies(Files);
+                return RegisteredFileDependencies.ResolveDependencies(_files).ToList();
             }
         }
 
@@ -84,7 +67,7 @@ namespace Lucy.Bundle
             {
                 if (!IsDynamic && Name.StartsWith("~/"))
                     return Name;
-                string autoName = IsDynamic ? DynamicBundleNameFromFiles(FilesWithDependencies) : Name;
+                var autoName = IsDynamic ? DynamicBundleNameFromFiles(FilesWithDependencies) : Name;
                 switch (BundleType)
                 {
                     case BundleTypes.Script:
@@ -97,5 +80,15 @@ namespace Lucy.Bundle
         }
 
         #endregion Properties
+
+        public Bundle Include(Filename fileName, Alias alias = default(Alias))
+        {
+            if (alias.IsEmpty)
+                alias = RegisteredAliases.GetOrCreateAlias(fileName);
+            fileName.Check();
+            _files.AddIfNotExists(fileName);
+            RegisteredAliases.RegisterAlias(fileName, alias);
+            return this;
+        }
     }
 }

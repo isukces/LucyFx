@@ -12,7 +12,7 @@
     <copyright>Copyright by Internet Sukces Piotr Stęclik 2014</copyright>
     <tags>Nancy,MVC,Razor,Css bundle,Js bundle</tags>
 	 <dependencies>
-      <dependency id="AjaxMin" version="5.9.5229.26434" />
+      <dependency id="AjaxMin" version="5.10.5260.16959" />
     </dependencies>
   </metadata>
   <files>

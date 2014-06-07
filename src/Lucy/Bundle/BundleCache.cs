@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -22,9 +23,7 @@ namespace Lucy.Bundle
         internal static BundleCacheItem Store(BundleTypes bundleType, FileInfo[] files, bool minified, String content)
         {
             var key = ComputeKey(bundleType, files, minified);
-            BundleCacheItem result;
-            if (!Cache.TryGetValue(key, out result))
-                Cache[key] = result = new BundleCacheItem(files);
+            var result = Cache.GetOrAdd(key, _ => new BundleCacheItem(files));
             result.Content = content;
             return result;
         }
@@ -41,7 +40,7 @@ namespace Lucy.Bundle
 
         #region Static Fields
 
-        static readonly Dictionary<string, BundleCacheItem> Cache = new Dictionary<string, BundleCacheItem>(StringComparer.OrdinalIgnoreCase);
+        static readonly ConcurrentDictionary<string, BundleCacheItem> Cache = new ConcurrentDictionary<string, BundleCacheItem>(StringComparer.OrdinalIgnoreCase);
 
         #endregion Static Fields
     }

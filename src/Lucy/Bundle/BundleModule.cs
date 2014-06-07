@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -71,6 +72,14 @@ namespace Lucy.Bundle
             throw new InvalidOperationException(string.Format("Bundled file {0} not found", fileInfo.FullName));
         }
 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dynamicAliases">I think we can use normal Dictionary here</param>
+        /// <param name="alias"></param>
+        /// <param name="bundleType"></param>
+        /// <returns></returns>
         private static Filename ResolveAlias(ref Dictionary<Alias, Filename> dynamicAliases, Alias alias,
             BundleTypes bundleType)
         {
@@ -81,7 +90,8 @@ namespace Lucy.Bundle
             Filename fileName;
             if (dynamicAliases == null)
             {
-                dynamicAliases = new Dictionary<Alias, Filename>();
+                // fill 
+                dynamicAliases = new  Dictionary<Alias, Filename>();
                 foreach (Bundle bundle in RegisteredBundles.GetExplicitBundles())
                     foreach (Filename file in bundle.FilesWithDependencies)
                     {
@@ -125,10 +135,20 @@ namespace Lucy.Bundle
 
         private object BundleByVirtualPathResponse(dynamic parameters)
         {
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
             Bundle bundle = RegisteredBundles.GetBundleByPath(Request.Path.MakeTildaPrefixedPath());
-            return bundle == null
-                ? HttpStatusCode.NotFound
-                : RenderFiles(bundle.BundleType, bundle.FilesWithDependencies);
+            stopwatch.Stop();
+            Debug.WriteLine("GetBundleByPath for {0} = {1}ms", Request.Path, stopwatch.ElapsedMilliseconds);
+        
+
+            if ( bundle == null)
+                return HttpStatusCode.NotFound;
+            stopwatch.Start();
+            var response = RenderFiles(bundle.BundleType, bundle.FilesWithDependencies);
+            stopwatch.Stop();
+            Debug.WriteLine("Render files for {0} = {1}ms",Request.Path, stopwatch.ElapsedMilliseconds);
+            return response;
         }
 
         private bool CanSendNotModifiedResponse(string eTag, DateTime lastModified)
@@ -155,7 +175,7 @@ namespace Lucy.Bundle
                 .Distinct()
                 .Select(alias => ResolveAlias(ref dynamicAliases, alias, BundleTypes.Script))
                 .ToList();
-            List<Filename> plain = RegisteredFileDependencies.ResolveDependencies(files);
+            List<Filename> plain = RegisteredFileDependencies.ResolveDependencies(files).ToList();
             return RenderFiles(BundleTypes.Script, plain);
         }
 
@@ -167,7 +187,7 @@ namespace Lucy.Bundle
                 .Distinct()
                 .Select(alias => ResolveAlias(ref dynamicAliases, alias, BundleTypes.StyleSheet))
                 .ToList();
-            List<Filename> plain = RegisteredFileDependencies.ResolveDependencies(files);
+            List<Filename> plain = RegisteredFileDependencies.ResolveDependencies(files).ToList();
             return RenderFiles(BundleTypes.Script, plain);
         }
 
