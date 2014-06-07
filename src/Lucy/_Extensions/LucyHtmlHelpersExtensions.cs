@@ -1,4 +1,5 @@
-﻿using Nancy.Helpers;
+﻿using Microsoft.Ajax.Utilities;
+using Nancy.Helpers;
 using Nancy.ModelBinding;
 using Nancy.Validation;
 using Nancy.ViewEngines;
@@ -120,6 +121,18 @@ namespace Lucy
             return MakeSimpleInput(helpers, expression, "hidden");
         }
 
+        public static IHtmlString InlineJavaScript<TModel>(HtmlHelpers<TModel> x, string script, bool doMinify = false)
+        {
+            if (string.IsNullOrEmpty(script))
+                return new NonEncodedHtmlString("");
+            script = doMinify
+                ? new Minifier().MinifyJavaScript(script)
+                : script.Trim();
+            return string.IsNullOrEmpty(script)
+                ? new NonEncodedHtmlString("")
+                : new NonEncodedHtmlString("<script type=\"text/javascript\">\r\n" + script + "\r\n</script>");
+        }
+
         public static IHtmlString LabelFor(string forName, string text, dynamic htmlAttributes = null)
         {
             var attr = new Dictionary<string, string>
@@ -162,6 +175,29 @@ namespace Lucy
 
 
             var markup = attr.CompileToAttributesWithTag("a", HttpUtility.HtmlEncode(label));
+            return new NonEncodedHtmlString(markup);
+        }
+
+        public static IHtmlString MakeSimpleInput<T>(HtmlHelpers<T> helpers, Expression<Func<T, object>> expression, string tagName)
+        {
+            var member = expression.GetTargetMemberInfo();
+            var func = expression.Compile();
+            var value = func.Invoke(helpers.Model);
+
+            var markup = string.Format("<input type=\"{0}\" name=\"{1}\" value=\"{2}\" />",
+                tagName,
+                HttpUtility.HtmlEncode(member.Name),
+                HttpUtility.HtmlEncode(HtmlDataSerialize.ToString(value)));
+            return new NonEncodedHtmlString(markup);
+        }
+
+        public static IHtmlString MakeSimpleInput<T>(HtmlHelpers<T> helpers, string memberName, object value, string tagName)
+        {
+
+            var markup = string.Format("<input type=\"{0}\" name=\"{1}\" value=\"{2}\" />",
+                tagName,
+                HttpUtility.HtmlEncode(memberName),
+                HttpUtility.HtmlEncode(HtmlDataSerialize.ToString(value)));
             return new NonEncodedHtmlString(markup);
         }
 
@@ -261,30 +297,6 @@ namespace Lucy
             var toys = GetLucyToys(x.RenderContext);
             var text = toys.NameProvider.GetLabelForObjectMember(member, x.CurrentLocale);
             return LabelFor(member.Name, text, htmlAttributes);
-        }
- 
-
-        public static IHtmlString MakeSimpleInput<T>(HtmlHelpers<T> helpers, Expression<Func<T, object>> expression, string tagName)
-        {
-            var member = expression.GetTargetMemberInfo();
-            var func = expression.Compile();
-            var value = func.Invoke(helpers.Model);
-
-            var markup = string.Format("<input type=\"{0}\" name=\"{1}\" value=\"{2}\" />",
-                tagName,
-                HttpUtility.HtmlEncode(member.Name),
-                HttpUtility.HtmlEncode(HtmlDataSerialize.ToString(value)));
-            return new NonEncodedHtmlString(markup);
-        }
-
-        public static IHtmlString MakeSimpleInput<T>(HtmlHelpers<T> helpers, string memberName, object value, string tagName)
-        {
-      
-            var markup = string.Format("<input type=\"{0}\" name=\"{1}\" value=\"{2}\" />",
-                tagName,
-                HttpUtility.HtmlEncode(memberName),
-                HttpUtility.HtmlEncode(HtmlDataSerialize.ToString(value)));
-            return new NonEncodedHtmlString(markup);
         }
 
         private static IDisposable OpenClose<TModel>(this HtmlHelpers<TModel> x, string tag, Dictionary<string, string> noEncodedAttributes)
