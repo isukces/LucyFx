@@ -58,6 +58,7 @@ namespace Lucy
 
         public List<TData> ToList()
         {
+            _lockSlim.EnterReadLock();
             try
             {
                 var result = new List<TData>(_list.Count);
