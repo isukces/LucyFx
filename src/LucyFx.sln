@@ -38,11 +38,11 @@ Global
 		{F0C14D05-2317-4267-B09A-E640044E22B3} = {9C4A3A13-A325-4172-8C15-BF41637D26D5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		BuildVersion_UseGlobalSettings = False
-		BuildVersion_BuildVersioningStyle = None.None.DeltaBaseYearDayOfYear.Increment
-		BuildVersion_UpdateAssemblyVersion = True
-		BuildVersion_UpdateFileVersion = True
-		BuildVersion_StartDate = 2000/1/1
 		BuildVersion_DetectChanges = False
+		BuildVersion_StartDate = 2000/1/1
+		BuildVersion_UpdateFileVersion = True
+		BuildVersion_UpdateAssemblyVersion = True
+		BuildVersion_BuildVersioningStyle = None.None.DeltaBaseYearDayOfYear.Increment
+		BuildVersion_UseGlobalSettings = False
 	EndGlobalSection
 EndGlobal

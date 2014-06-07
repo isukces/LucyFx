@@ -2,7 +2,7 @@
 
 namespace Lucy
 {
-    public class LucyApplicationRegistrations : Nancy.Bootstrapper.ApplicationRegistrations
+    public class LucyApplicationRegistrations : Nancy.Bootstrapper.Registrations
     {
         public LucyApplicationRegistrations()
         {
