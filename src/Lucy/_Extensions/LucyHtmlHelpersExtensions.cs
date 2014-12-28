@@ -22,6 +22,8 @@ namespace Lucy
 
         // Public Methods 
 
+
+
         public static IDisposable BeginForm<TModel>(this HtmlHelpers<TModel> x, string action = null, FormMethod method = FormMethod.Post, dynamic htmlAttributes = null)
         {
             var attr = new Dictionary<string, string>
@@ -40,29 +42,52 @@ namespace Lucy
             return OpenClose(x, "div", "class", "form-group");
         }
 
-        public static IHtmlString EditFor<TModel>(this HtmlHelpers<TModel> x, Expression<Func<TModel, object>> forNameExpression)
-        {
 
-            var member = forNameExpression.GetTargetMemberInfo();
-            Type type;
+        public static IHtmlString EditFor<TModel>(this HtmlHelpers<TModel> helpers, Expression<Func<TModel, object>> forNameExpression)
+        {
+            var member = LucyUtils.GetTargetMemberInfo(forNameExpression);
+            return EditFor(helpers, member, forNameExpression.Compile());
+        }
+        public static IHtmlString EditFor<TModel>(this HtmlHelpers<TModel> x, MemberInfo member, Func<TModel, object> getValue, Dictionary<string, string> lookup = null)
+        {
+            var tmp = ExtendedMemberInfo.FromMember(member);
+            return x.EditFor(tmp, getValue, lookup);
+        }
+        public static IHtmlString EditFor<TModel>(this HtmlHelpers<TModel> x, ExtendedMemberInfo member, Func<TModel, object> getValue, Dictionary<string, string> lookup = null)
+        {
+            var dataType = member.GetDataType();
             string markup;
-            if (member is PropertyInfo)
-                type = (member as PropertyInfo).PropertyType;
-            else if (member is FieldInfo)
-                type = (member as FieldInfo).FieldType;
-            else
-                throw new NotSupportedException();
-            if (type == typeof(string) || type == typeof(int))
+
+            if (dataType == typeof(string) || dataType == typeof(int))
             {
                 var attr = new Dictionary<string, string>
+                    {
+                 //       { "class", "text-box single-line"},
+                  //      { "data-val", "true"},
+                        { "id", member.HtmlId},
+                        { "name", member.HtmlFormName }
+                    };
+                if (lookup != null)
                 {
-                    { "class", "text-box single-line"},
-                    { "data-val", "true"},
-                    { "id", member.Name},
-                    { "name", member.Name }
-                };
-                var value = FormValueFor(x, member.Name);
-                attr["value"] = value == null ? "" : value.ToString();
+                    var sb = new StringBuilder();
+                    sb.Append(Tags.Open("select", attr).ToHtmlString());
+                    foreach (var i in lookup)
+                        sb.AppendFormat("<option value=\"{0}\">{1}</option>", i.Key,
+                            new EncodedHtmlString(i.Value).ToHtmlString());
+                    sb.Append("</select>\r\n");
+                    markup = sb.ToString();
+                }
+                else
+                {
+                    attr["id"] = member.HtmlId;
+                    attr["name"] = member.HtmlFormName;
+                    var value = FormValueFor(x, member, getValue);
+                    attr["value"] = value == null ? "" : value.ToString();
+                    var toys = x.RenderContext.GetLucyToys();
+                    toys.JavascriptBundle.Include("~/Scripts/jquery.validate.js");
+                    toys.JavascriptBundle.Include("~/Scripts/jquery.validate.unobtrusive.js");
+                    markup = attr.CompileToAttributesWithSelfClosingTag("input");
+                }
                 ////attr.ValidationNumber(Translation.MustBeANumberMessage(member.Name));
                 ////if (type == typeof(int))
                 ////{
@@ -95,10 +120,7 @@ namespace Lucy
                 //name="GroupName" 
                 //value="Foundation" 
                 //type="text">
-                var toys = x.RenderContext.GetLucyToys();
-                toys.JavascriptBundle.Include("~/Scripts/jquery.validate.js");
-                toys.JavascriptBundle.Include("~/Scripts/jquery.validate.unobtrusive.js");
-                markup = attr.CompileToAttributesWithSelfClosingTag("input");
+
             }
             else
                 markup = "??????????";
@@ -121,7 +143,7 @@ namespace Lucy
             return MakeSimpleInput(helpers, expression, "hidden");
         }
 
-        public static IHtmlString InlineJavaScript<TModel>(HtmlHelpers<TModel> x, string script, bool doMinify = false)
+        public static IHtmlString InlineJavaScript<TModel>(this HtmlHelpers<TModel> x, string script, bool doMinify = false)
         {
             if (string.IsNullOrEmpty(script))
                 return new NonEncodedHtmlString("");
@@ -144,27 +166,38 @@ namespace Lucy
             return new NonEncodedHtmlString(markup);
         }
 
-        public static IHtmlString LabelFor<TModel>(this HtmlHelpers<TModel> htmlHelpers, Expression<Func<TModel, object>> forNameExpression, dynamic htmlAttributes = null)
+        public static IHtmlString LabelFor<TModel>(this HtmlHelpers<TModel> htmlHelpers, Expression<Func<TModel, object>> expression, dynamic htmlAttributes = null)
         {
-            return LabelForMember(htmlHelpers, htmlAttributes, forNameExpression.GetTargetMemberInfo());
+            return LabelForMember(htmlHelpers, LucyUtils.GetTargetMemberInfo(expression), htmlAttributes);
         }
 
-        public static IHtmlString LabelForItem<TModel>(this HtmlHelpers<IList<TModel>> htmlHelpers, Expression<Func<TModel, object>> forNameExpression, dynamic htmlAttributes = null)
+        public static IHtmlString LabelForItem<TModel>(this HtmlHelpers<IList<TModel>> htmlHelpers, Expression<Func<TModel, object>> expression, dynamic htmlAttributes = null)
         {
-            return LabelForMember(htmlHelpers, htmlAttributes, forNameExpression.GetTargetMemberInfo());
+            return LabelForMember(htmlHelpers, LucyUtils.GetTargetMemberInfo(expression), htmlAttributes);
         }
 
-        public static IHtmlString LabelForItem<TModel>(this HtmlHelpers<IEnumerable<TModel>> htmlHelpers, Expression<Func<TModel, object>> forNameExpression, dynamic htmlAttributes = null)
+        public static IHtmlString LabelForItem<TModel>(this HtmlHelpers<IEnumerable<TModel>> htmlHelpers, Expression<Func<TModel, object>> expression, dynamic htmlAttributes = null)
         {
-            return LabelForMember(htmlHelpers, htmlAttributes, forNameExpression.GetTargetMemberInfo());
+            return LabelForMember(htmlHelpers, LucyUtils.GetTargetMemberInfo(expression), htmlAttributes);
         }
 
-        public static IHtmlString LabelForItem<TModel>(this HtmlHelpers<TModel[]> htmlHelpers, Expression<Func<TModel, object>> forNameExpression, dynamic htmlAttributes = null)
+        public static IHtmlString LabelForItem<TModel>(this HtmlHelpers<TModel[]> htmlHelpers, Expression<Func<TModel, object>> expression, dynamic htmlAttributes = null)
         {
-            return LabelForMember(htmlHelpers, htmlAttributes, forNameExpression.GetTargetMemberInfo());
+            return LabelForMember(htmlHelpers, LucyUtils.GetTargetMemberInfo(expression), htmlAttributes);
         }
 
         public static IHtmlString Link<TModel>(this HtmlHelpers<TModel> x, string label, string url, dynamic htmlAttributes = null)
+        {
+            return LinkUnencoded(x, HttpUtility.HtmlEncode(label), url, htmlAttributes);
+        }
+
+        public static string Glyph<TModel>(this HtmlHelpers<TModel> x, params string[] names)
+        {
+            return string.Format("<i class=\"{0}\"></i>", string.Join(" ", names));
+            // <i class=\"glyphicon glyphicon-hand-right\"></i>
+        }
+
+        public static IHtmlString LinkUnencoded<TModel>(this HtmlHelpers<TModel> x, string label, string url, dynamic htmlAttributes = null)
         {
             url = x.RenderContext.Context.ToFullPath(url);
             var attr = new Dictionary<string, string>
@@ -174,28 +207,36 @@ namespace Lucy
             attr.Append((object)htmlAttributes);
 
 
-            var markup = attr.CompileToAttributesWithTag("a", HttpUtility.HtmlEncode(label));
+            var markup = attr.CompileToAttributesWithTag("a", label);
             return new NonEncodedHtmlString(markup);
         }
 
-        public static IHtmlString MakeSimpleInput<T>(HtmlHelpers<T> helpers, Expression<Func<T, object>> expression, string tagName)
+
+        public static IHtmlString MakeSimpleInput<T>(this HtmlHelpers<T> helpers, Expression<Func<T, object>> expression, string inputType)
         {
-            var member = expression.GetTargetMemberInfo();
             var func = expression.Compile();
-            var value = func.Invoke(helpers.Model);
+            var member = LucyUtils.GetTargetMemberInfo(expression);
+            return MakeSimpleInput(helpers, func, member.HtmlFormName, inputType);
+        }
+
+        public static IHtmlString MakeSimpleInput<T>(this HtmlHelpers<T> helpers, Func<T, object> func, string name, string inputType)
+        {
+            //var member = expression.GetTargetMemberInfo();
+            // var func = expression.Compile();
+            var value = func(helpers.Model);
 
             var markup = string.Format("<input type=\"{0}\" name=\"{1}\" value=\"{2}\" />",
-                tagName,
-                HttpUtility.HtmlEncode(member.Name),
+                inputType,
+                HttpUtility.HtmlEncode(name),
                 HttpUtility.HtmlEncode(HtmlDataSerialize.ToString(value)));
             return new NonEncodedHtmlString(markup);
         }
 
-        public static IHtmlString MakeSimpleInput<T>(HtmlHelpers<T> helpers, string memberName, object value, string tagName)
+        public static IHtmlString MakeSimpleInput<T>(HtmlHelpers<T> helpers, string memberName, object value, string inputType)
         {
 
             var markup = string.Format("<input type=\"{0}\" name=\"{1}\" value=\"{2}\" />",
-                tagName,
+                inputType,
                 HttpUtility.HtmlEncode(memberName),
                 HttpUtility.HtmlEncode(HtmlDataSerialize.ToString(value)));
             return new NonEncodedHtmlString(markup);
@@ -207,11 +248,11 @@ namespace Lucy
             var sb = new StringBuilder();
             sb.Append("<" + tag);
             if (attr != null)
-                for (int idx = 1; idx < attr.Length; idx += 2)
+                for (var idx = 1; idx < attr.Length; idx += 2)
                     sb.AppendFormat(" {0}=\"{1}\"", attr[idx - 1], attr[idx]);
             sb.AppendFormat(">");
-            string openingTag = sb.ToString();
-            string closingTag = "</" + tag + ">";
+            var openingTag = sb.ToString();
+            var closingTag = "</" + tag + ">";
             lucyToys.WriteLiteral(openingTag);
             return new DisposableWithAction(() => lucyToys.WriteLiteral(closingTag));
         }
@@ -224,23 +265,31 @@ namespace Lucy
             return u.Claims.Any(i => i == role);
         }
 
-        public static IHtmlString ValidationMessageFor<TModel>(this HtmlHelpers<TModel> x, Expression<Func<TModel, object>> forNameExpression)
+        public static IHtmlString ValidationMessageFor<TModel>(this HtmlHelpers<TModel> helpers, Expression<Func<TModel, object>> expression)
         {
-            var member = forNameExpression.GetTargetMemberInfo();
+            var member = LucyUtils.GetTargetMemberInfo(expression);
+            return ValidationMessageFor(helpers, member);
+        }
+        public static IHtmlString ValidationMessageFor<TModel>(this HtmlHelpers<TModel> helpers, MemberInfo member)
+        {
+            return ValidationMessageFor(helpers, ExtendedMemberInfo.FromMember(member));
+        }
+        public static IHtmlString ValidationMessageFor<TModel>(this HtmlHelpers<TModel> helpers, ExtendedMemberInfo member)
+        {
             #region Try get binding exception
             {
-                var pbException = GetPropertyBindingException(x, member.Name);
+                var pbException = GetPropertyBindingException(helpers, member.HtmlFormName);
                 if (pbException != null)
                     return new EncodedHtmlString(pbException.InnerException != null ? pbException.InnerException.Message : pbException.Message);
             }
             #endregion
             #region Try get validation error
             {
-                var validationResult = x.RenderContext.Context.ModelValidationResult;
+                var validationResult = helpers.RenderContext.Context.ModelValidationResult;
                 if (validationResult == null || validationResult.Errors == null)
                     return null;
                 IList<ModelValidationError> errors;
-                if (!validationResult.Errors.TryGetValue(member.Name, out errors))
+                if (!validationResult.Errors.TryGetValue(member.HtmlFormName, out errors))
                     return null;
                 if (errors != null && errors.Any())
                     return new EncodedHtmlString(errors[0].ErrorMessage);
@@ -255,30 +304,36 @@ namespace Lucy
         }
         // Private Methods 
 
-        static object FormValueFor<TModel>(this HtmlHelpers<TModel> x, string propertyName)
+        static object FormValueFor<TModel>(this HtmlHelpers<TModel> x, ExtendedMemberInfo emi, Func<TModel, object> getValueFunction)
         {
+            // dodałem getValueFunction, ponieważ czasem wyrażenia są bardziej skomplikowane niż tylko pon
             var exception = GetModelBindingException(x);
             if (exception != null)
             {
-                var a = x.RenderContext.Context.Request.Form[propertyName];
+                var a = x.RenderContext.Context.Request.Form[emi.HtmlFormName];
                 return a.HasValue ? a.Value : null;
             }
+            // ReSharper disable once CompareNonConstrainedGenericWithNull
+            var value = x.Model == null ? null : getValueFunction(x.Model);
+            /*
             var pi = typeof(TModel).GetProperty(propertyName);
             if (pi != null && pi.CanRead && !pi.GetGetMethod().IsStatic && pi.GetIndexParameters().Length == 0)
                 return pi.GetValue(x.Model);
             return null;
+             */
+            return value;
         }
 
         private static ModelBindingException GetModelBindingException<TModel>(HtmlHelpers<TModel> x)
         {
-            LucyToys lt = x.RenderContext.GetLucyToys();
-            ModelBindingException exception = lt.AttachedExceptions.OfType<ModelBindingException>().FirstOrDefault();
+            var lucyToys = x.RenderContext.GetLucyToys();
+            var exception = lucyToys.AttachedExceptions.OfType<ModelBindingException>().FirstOrDefault();
             return exception;
         }
 
         static PropertyBindingException GetPropertyBindingException<TModel>(HtmlHelpers<TModel> x, string propertyName)
         {
-            ModelBindingException exception = GetModelBindingException(x);
+            var exception = GetModelBindingException(x);
             if (exception == null || exception.PropertyBindingExceptions == null)
                 return null;
             return exception.PropertyBindingExceptions
@@ -292,11 +347,16 @@ namespace Lucy
             return text;
         }
 
-        private static IHtmlString LabelForMember<TModel>(HtmlHelpers<TModel> x, dynamic htmlAttributes, MemberInfo member)
+        public static IHtmlString LabelForMember<TModel>(this HtmlHelpers<TModel> helpers, ExtendedMemberInfo member, dynamic htmlAttributes)
         {
-            var toys = GetLucyToys(x.RenderContext);
-            var text = toys.NameProvider.GetLabelForObjectMember(member, x.CurrentLocale);
-            return LabelFor(member.Name, text, htmlAttributes);
+            var toys = GetLucyToys(helpers.RenderContext);
+            var text = toys.NameProvider.GetLabelForObjectMember(member.Member, helpers.CurrentLocale);
+            return LabelFor(member.HtmlId, text, htmlAttributes);
+        }
+
+        public static IHtmlString LabelForMember<TModel>(this HtmlHelpers<TModel> helpers, MemberInfo member, dynamic htmlAttributes)
+        {
+            return LabelForMember(helpers, ExtendedMemberInfo.FromMember(member), htmlAttributes);
         }
 
         private static IDisposable OpenClose<TModel>(this HtmlHelpers<TModel> x, string tag, Dictionary<string, string> noEncodedAttributes)
@@ -308,9 +368,9 @@ namespace Lucy
                 foreach (var kv in noEncodedAttributes)
                     sb.AppendFormat(" {0}=\"{1}\"", HttpUtility.HtmlEncode(kv.Key), HttpUtility.HtmlEncode(kv.Value));
             sb.AppendFormat(">");
-            string openingTag = sb.ToString();
+            var openingTag = sb.ToString();
             lucyToys.WriteLiteral(openingTag);
-            string closingTag = "</" + tag + ">";
+            var closingTag = "</" + tag + ">";
             return new DisposableWithAction(() => lucyToys.WriteLiteral(closingTag));
         }
         // Internal Methods 

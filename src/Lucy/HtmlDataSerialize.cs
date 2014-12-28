@@ -18,6 +18,8 @@ namespace Lucy
                 return stringValue;
             if (obj is int)
                 return ((int)obj).ToString(CultureInfo.InvariantCulture);
+            if (obj is Guid)
+                return ((Guid) obj).ToString("B");
             throw new NotImplementedException();
         }
 

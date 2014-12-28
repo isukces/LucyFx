@@ -3,6 +3,13 @@ using Nancy.ViewEngines.Razor;
 
 namespace Lucy
 {
+
+    public abstract class LucyRazorViewBase<TModel, TViewModel>
+        : LucyRazorViewBase<ModelViewModel<TModel, TViewModel>>
+    {
+
+    }
+
     public abstract class LucyRazorViewBase<TModel>
         : NancyRazorViewBase<TModel>
     {

@@ -1,4 +1,6 @@
-﻿using Nancy;
+﻿using System.Linq;
+using System.Text;
+using Nancy;
 using System;
 using System.Reflection;
 
@@ -8,7 +10,7 @@ namespace Lucy.DataProcess
     {
         #region Constructors
 
-        public DataProcessContainer(MemberInfo member, Request request, dynamic dictionary)
+        public DataProcessContainer(ExtendedMemberInfo member, Request request, dynamic dictionary)
         {
             Member = member;
             Request = request;
@@ -23,8 +25,8 @@ namespace Lucy.DataProcess
 
         private DataProcessContainer Process(Func<object, object> processFunction)
         {
-            var value = Dictionary[Member.Name] as DynamicDictionaryValue;
-            Dictionary[Member.Name] = value != null && value.HasValue
+            var value = Dictionary[Member.HtmlFormName] as DynamicDictionaryValue;
+            Dictionary[Member.HtmlFormName] = value != null && value.HasValue
                 ? processFunction(value.Value)
                 : processFunction(null);
             return this;
@@ -52,13 +54,36 @@ namespace Lucy.DataProcess
             });
         }
 
+        public DataProcessContainer RemoveWhiteChars()
+        {
+            return Process(value =>
+            {
+                if (value == null)
+                    return null;
+                var text = value.ToString();
+                var s = new StringBuilder(text.Length);
+                foreach (var i in text.Where(i => i > ' '))
+                    s.Append(i);
+                return s.ToString();
+            });
+        }
+
+        /// <summary>
+        /// Converts to upper case string
+        /// </summary>
+        /// <returns></returns>
+        public DataProcessContainer UppercaseString()
+        {
+            return Process(value => value == null ? null : value.ToString().ToUpper());
+        }
+
         #endregion Methods
 
         #region Properties
 
         protected dynamic Dictionary { get; private set; }
 
-        protected MemberInfo Member { get; private set; }
+        protected ExtendedMemberInfo Member { get; private set; }
 
         protected Request Request { get; private set; }
 

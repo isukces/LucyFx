@@ -1,4 +1,5 @@
-﻿using Nancy.Helpers;
+﻿using System.Collections;
+using Nancy.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -48,7 +49,7 @@ namespace Lucy
         {
             if (dictionary == null)
                 return "";
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
             foreach (var pair in dictionary)
                 sb.AppendFormat(" {0}=\"{1}\"", HttpUtility.HtmlEncode(pair.Key), HttpUtility.HtmlEncode(pair.Value));
             return sb.ToString();
@@ -58,7 +59,24 @@ namespace Lucy
         {
             if (options == null)
                 return;
-            Type type = options.GetType();
+            var type = options.GetType();
+            if (type.IsGenericType)
+            {
+                var t1 = type.GetGenericTypeDefinition();
+                if (t1 == typeof (Dictionary<,>))
+                {
+                    var a = (options as IDictionary);
+                    if (a == null)
+                        throw new NullReferenceException("Dictionary<,> is not a IDictionary");
+                    foreach (var key in a.Keys.Cast<object>().Where(key => key != null))
+                    {
+                        var kk = a[key];
+                        if (kk==null )continue;
+                        dictionary[key.ToString()] = kk.ToString();
+                    }
+                    return;
+                }
+            }
             var props = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
             foreach (var propertyInfo in props)
             {

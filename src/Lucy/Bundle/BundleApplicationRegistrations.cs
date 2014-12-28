@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Lucy.Bundle
 {
-    public class BundleApplicationRegistrations : IApplicationRegistrations
+    public class BundleApplicationRegistrations : IRegistrations
     {
         public IEnumerable<CollectionTypeRegistration> CollectionTypeRegistrations
         {

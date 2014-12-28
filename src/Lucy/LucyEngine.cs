@@ -17,7 +17,7 @@ namespace Lucy
         public static void InitializeView<TModel>(NancyRazorViewBase<TModel> view)
         {
             LucyToys toys = LucyToys.GetOrCreate(view.ViewBag);
-            toys.WriteLiteral = view.WriteLiteral;
+            toys.WriteLiteralAction = view.WriteLiteral;
         }
 
 

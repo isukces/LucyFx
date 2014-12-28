@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Globalization;
+using System.Reflection;
 using System.Text;
 
 namespace Lucy.TextProviders
@@ -15,7 +16,7 @@ namespace Lucy.TextProviders
             foreach (var singleChar in camelString)
             {
                 if (char.IsUpper(singleChar) && stringBuilder.Length > 0)
-                    stringBuilder.Append(" " + singleChar.ToString().ToLower());
+                    stringBuilder.Append(" " + singleChar.ToString(CultureInfo.InvariantCulture).ToLower());
                 else
                     stringBuilder.Append(singleChar);
             }

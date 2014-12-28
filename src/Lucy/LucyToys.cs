@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using Lucy.Bundle;
 using Lucy.TextProviders;
 
@@ -25,15 +26,19 @@ namespace Lucy
         #region Static Methods
 
         // Public Methods 
-
+        [NotNull]
         public static LucyToys Get(dynamic viewBag)
         {
             var item = viewBag[Key];
-            if (!item.HasValue)
-                throw new Exception(
-                    "Lucy's data has not been initialized properly. Derive your view from LucyRazorViewBase.");
-            var lucyToys = item.Value as LucyToys;
-            return lucyToys;
+            // ReSharper disable once InvertIf
+            if (item.HasValue)
+            {
+                var lucyToys = item.Value as LucyToys;
+                if (lucyToys != null)
+                    return lucyToys;
+            }
+            throw new Exception(
+                "Lucy's data has not been initialized properly. Derive your view from LucyRazorViewBase.");
         }
 
         public static LucyToys GetOrCreate(dynamic viewBag)
@@ -51,6 +56,16 @@ namespace Lucy
 
         #region Methods
 
+        // Public Methods 
+
+        public void WriteLiteral(object x)
+        {
+            if (WriteLiteralAction == null)
+                throw new Exception(
+                    "Unable to write literal. Derive your view from LucyRazorViewBase or call LucyEngine.InitializeView manually");
+            if (x != null)
+                WriteLiteralAction(x);
+        }
         // Private Methods 
 
         private TResolveType Resolve<TResolveType>() where TResolveType : class
@@ -62,15 +77,10 @@ namespace Lucy
 
         #endregion Methods
 
-        #region Static Fields
-
-        private const string Key = "_____LucyToys______";
-
-        #endregion Static Fields
-
         #region Fields
 
         ILucyTextProvider _nameProvider;
+        private const string Key = "_____LucyToys______";
 
         #endregion Fields
 
@@ -82,7 +92,6 @@ namespace Lucy
 
         public Bundle.Bundle JavascriptBundle { get; private set; }
 
-
         public ILucyTextProvider NameProvider
         {
             get
@@ -93,7 +102,7 @@ namespace Lucy
 
         public List<Filename> RenderedFiles { get; set; }
 
-        public Action<object> WriteLiteral { get; set; }
+        public Action<object> WriteLiteralAction { get; set; }
 
         #endregion Properties
     }

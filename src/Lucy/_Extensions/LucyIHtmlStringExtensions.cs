@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Nancy.ViewEngines.Razor;
 
-namespace Lucy._Extensions
+namespace Lucy 
 {
     public static  class LucyIHtmlStringExtensions
     {
